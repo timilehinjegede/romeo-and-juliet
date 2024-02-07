@@ -17,9 +17,9 @@ def display_welcome_message(player1_name, player2_name):
     add_line_break()
 
 
-def display_setup_message(message):
+def display_message(message):
     print(message)
 
 
 def add_line_break():
-    print("===== ***** =====")
+    print("========== ********** ==========")

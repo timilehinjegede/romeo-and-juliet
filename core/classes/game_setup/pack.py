@@ -21,6 +21,7 @@ class Pack:
             card = Card(None, None, CardType.JOKER)
             self.cards.append(card)
 
+    def shuffle_pack(self):
         # Shuffle the cards
         random.shuffle(self.cards)
 
