@@ -31,5 +31,12 @@ def turn_choice():
     return choice
 
 
+def get_move_input():
+    x = int(input("X: "))
+    y = int(input("Y: "))
+
+    return x, y
+
+
 def add_line_break():
     print("========== ********** ==========")

@@ -1,9 +1,9 @@
-from core.classes.moves.black_numeral_move import black_numeral_move
-from core.classes.moves.red_numeral_move import red_numeral_move
+from core.classes.moves.black_numeral_move import black_numeral_move, get_y_position_count
+from core.classes.moves.red_numeral_move import red_numeral_move, get_x_position_count
 from core.classes.moves.joker_move import joker_move
 from core.classes.moves.king_move import king_move
 from core.classes.moves.knight_move import knight_move
-from core.classes.moves.swap import check_card_swap
+from core.classes.moves.swap import Swap
 
 
 def check_knight_move(x, y, new_x, new_y):
@@ -29,7 +29,7 @@ def check_red_numeral_move(x, y, new_x, new_y):
 
 
 def check_swap(x, y, joker_x, joker_y):
-    return check_card_swap(x, y, joker_x, joker_y)
+    return Swap().check_card_swap(x, y, joker_x, joker_y)
 
 
 def check_initial_move(x, y, new_x, new_y):
@@ -60,3 +60,23 @@ def check_winning_move(x_position, y_position):
     else:
         # Winning condition not met
         return False
+
+
+def y_position_count(y_position, move_count, direction):
+    return get_y_position_count(y_position, move_count, direction)
+
+
+def x_position_count(x_position, move_count, direction):
+    return get_x_position_count(x_position, move_count, direction)
+
+
+def save_swap(swap_x, swap_y):
+    return Swap().store_swap(swap_x, swap_y)
+
+
+def last_x_swap():
+    return Swap().get_swap_x()
+
+
+def last_y_swap():
+    return Swap().get_swap_y()
