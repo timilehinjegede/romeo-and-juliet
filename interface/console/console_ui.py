@@ -21,5 +21,15 @@ def display_message(message):
     print(message)
 
 
+def turn_choice():
+    choice = 0
+
+    while choice < 1 or choice > 2:
+        print("\n1. Make a move\n2. Swap a card")
+        choice = int(input("Enter your choice (1 or 2): "))
+
+    return choice
+
+
 def add_line_break():
     print("========== ********** ==========")
