@@ -7,10 +7,20 @@ from interface.console import console_ui
 
 
 class ConsoleGame:
+    def __init__(self, board):
+        self.board = board
+        self.player1_turn = True
+        self.game_over = False
+        self.valid_move = False
+        self.is_joker = False
+        self.turn = 1
+        self.is_first_move = True
 
-    # def __init__(self):
-    @staticmethod
-    def request_players_info():
+        # players
+        self.player1 = None
+        self.player2 = None
+
+    def request_players_info(self):
         # welcome both players to the romeo and juliet game
         console_ui.game_welcome()
 
@@ -19,14 +29,18 @@ class ConsoleGame:
         player2_name = console_ui.ask_for_player_name(2)
 
         # create the players
-        player1 = Player(player1_name, 1)
-        player2 = Player(player2_name, 2)
+        self.player1 = Player(player1_name, 1)
+        self.player2 = Player(player2_name, 2)
 
         console_ui.add_line_break()
 
         # welcome the players
         console_ui.welcome_players(player1_name, player2_name)
-        pass
+
+        # display the initial board
+        player1 = self.player1
+        player2 = self.player2
+        self.board.display_board(player1.xPosition, player1.yPosition, player2.xPosition, player2.yPosition)
 
     # def arrange_cards(self):
     #     pass
@@ -38,6 +52,281 @@ class ConsoleGame:
     # def make_move(self, player, card):
     #     # Validate player's move
     #     pass
+
+    def handle_player_move(self, player, opponent):
+
+        if self.is_first_move:
+            self.handle_initial_move(player, opponent)
+
+        else:
+            print("\n<Move {}>".format(self.turn))
+            choice = console_ui.turn_choice()
+
+            if choice == 1:
+                self.handle_move_card(player, opponent)
+            elif choice == 2:
+                self.handle_swap_card(player, opponent)
+
+    def handle_move_card(self, player, opponent):
+        valid_move = False
+
+        while not valid_move:
+            card = self.board.get_card_string(player.xPosition, player.yPosition)
+
+            # joker move
+            if "JOKER" in card:
+                x, y = self.get_move_coordinates()
+                valid_move = self.handle_joker_move(player, x, y, opponent)
+            # king move
+            elif "K" in card:
+                x, y = self.get_move_coordinates()
+                valid_move = self.handle_king_move(player, x, y, opponent)
+            # Jack move
+            elif "J" in card:
+                x, y = self.get_move_coordinates()
+                valid_move = self.handle_knight_move(player, x, y, opponent)
+            # black numeral card => SPADES OR CLUBS
+            elif "\u2660" in card or "\u2663" in card:
+                valid_move = self.handle_black_numeral_move(player, opponent)
+            elif "\u2661" in card or "\u2662" in card:
+                valid_move = self.handle_red_numeral_move(player, opponent)
+
+    def handle_initial_move(self, player, opponent):
+        if self.player1_turn:
+            print("\n<Move {}>".format(self.turn))
+            self.valid_move = False
+
+            while not self.valid_move:
+                x, y = self.get_move_coordinates()
+                self.valid_move = self.handle_king_move(player, x, y, opponent)
+
+            self.player1_turn = not self.player1_turn
+
+        self.board.display_board(player.xPosition, player.yPosition, opponent.xPosition,
+                                 opponent.yPosition)
+
+        if not self.player1_turn:
+            print("\n<Move {}>".format(self.turn))
+            self.valid_move = False
+
+            while not self.valid_move:
+                x, y = self.get_move_coordinates()
+                self.valid_move = self.handle_king_move(opponent, x, y, player)
+
+            self.player1_turn = not self.player1_turn
+
+        self.turn += 1
+        self.is_first_move = False
+        self.board.display_board(player.xPosition, player.yPosition, opponent.xPosition,
+                                 opponent.yPosition)
+
+    def handle_joker_move(self, player, x, y, opponent):
+        if not moves.check_move(x, y, opponent.xPosition, opponent.yPosition, player.player_number):
+            print("Invalid move, try again!")
+            return False
+        elif moves.joker_move(player.xPosition, player.yPosition, x, y):
+            if player.player_number == 1:
+                self.player1.set_position(x, y)
+            else:
+                self.player2.set_position(x, y)
+            print("\nValid move!\n{}'s new position: [{}][{}]".format(player.name,
+                                                                      player.xPosition,
+                                                                      player.yPosition))
+            return True
+        else:
+            print("Invalid move, try again!")
+            return False
+
+    def handle_king_move(self, player, x, y, opponent):
+        if not moves.check_move(x, y, opponent.xPosition, opponent.yPosition, player.player_number):
+            print("Invalid move, try again!")
+            return False
+
+        elif moves.king_move(player.xPosition, player.yPosition, x, y):
+            if player.player_number == 1:
+                self.player1.set_position(x, y)
+            else:
+                self.player2.set_position(x, y)
+            print("\nValid move!\n{}'s new position: [{}][{}]".format(player.name,
+                                                                      player.xPosition,
+                                                                      player.yPosition))
+            return True
+        else:
+            print("Invalid move, try again!")
+            return False
+
+    def handle_knight_move(self, player, x, y, opponent):
+        if not moves.check_move(x, y, opponent.xPosition, opponent.yPosition, player.player_number):
+            print("Invalid move, try again!")
+            return False
+        elif moves.knight_move(player.xPosition, player.yPosition, x, y):
+            if player.player_number == 1:
+                self.player1.set_position(x, y)
+            else:
+                self.player2.set_position(x, y)
+                print("\nValid move!\n{}'s new position: [{}][{}]".format(player.name,
+                                                                          player.xPosition,
+                                                                          player.yPosition))
+            return True
+        else:
+            print("Invalid move, try again!")
+            return False
+
+    def handle_black_numeral_move(self, player, opponent):
+        board = self.board
+
+        card_face = board.get_card_string(player.xPosition, player.yPosition)
+        move_count = int(card_face[1:3].strip())
+
+        # Ask player for the direction of the move (Right or Left)
+        print(f"\nMove {move_count} steps, right or left (R/L): ")
+        rl = input()
+        direction = Direction.RIGHT if rl == 'R' else Direction.LEFT
+
+        y = moves.y_position_count(player.yPosition, move_count, direction)
+
+        if not moves.check_move(player.xPosition, y, opponent.xPosition,
+                                opponent.yPosition, 1):
+            print("Invalid move, try again!")
+            return False
+        else:
+            if y == 0:
+                print("Invalid move, try again!")
+                return False
+            else:
+                if player.player_number == 1:
+                    self.player1.set_position(player.xPosition, y)
+                else:
+                    self.player2.set_position(player.xPosition, y)
+                print("\nValid move!\n{}'s new position: [{}][{}]".format(player.name,
+                                                                          player.xPosition,
+                                                                          player.yPosition))
+                return True
+
+    def handle_red_numeral_move(self, player, opponent):
+        board = self.board
+        card_face = board.get_card_string(player.xPosition, player.yPosition)
+        move_count = int(card_face[1:3].strip())
+
+        # Ask player for the direction of the move (Up or Down)
+        print(f"\nMove {move_count} steps, up or down (U/D): ")
+        rl = input()
+        direction = Direction.UP if rl == 'U' else Direction.DOWN
+
+        x = moves.x_position_count(player.xPosition, move_count, direction)
+
+        if not moves.check_move(x, player.yPosition, opponent.xPosition,
+                                opponent.yPosition, 1):
+            print("Invalid move, try again!")
+            return False
+        else:
+            if x == 0:
+                print("Invalid move, try again!")
+                return False
+            else:
+                if player.player_number == 1:
+                    self.player1.set_position(x, player.yPosition)
+                else:
+                    self.player2.set_position(x, player.yPosition)
+                print("\nValid move!\n{}'s new position: [{}][{}]".format(player.name,
+                                                                          player.xPosition,
+                                                                          player.yPosition))
+                return True
+
+    def handle_swap_card(self, player, opponent):
+        board = self.board
+        joker_x, joker_y = 0, 0
+        print("\nEnter JOKER position..")
+        self.is_joker = False
+
+        while not self.is_joker:
+            joker_x = int(input("X: "))
+            joker_y = int(input("Y: "))
+
+            # handle list out of range
+            card = board.get_card_string(joker_x, joker_y)
+
+            if "JOKER" in card:
+                self.is_joker = True
+            else:
+                print("Card is not a JOKER card, try again!")
+
+        print("\nEnter card position..")
+        self.valid_move = False
+
+        while not self.valid_move:
+            x = int(input("X: "))
+            y = int(input("Y: "))
+
+            if moves.last_x_swap() == x and moves.last_y_swap() == y:
+                print(
+                    "Cannot perform swap on the same card again! Please select another card to swap..")
+                return False
+
+            elif "JOKER" in board.get_card_string(x, y):
+                print("Cannot perform swap of joker with joker! Please select another card to swap..")
+                return False
+
+            elif (x == opponent.xPosition and y == opponent.yPosition) or (joker_x == opponent.xPosition
+                                                                           and joker_y ==
+                                                                           opponent.yPosition) \
+                    or (x == player.xPosition and y == player.yPosition) or (joker_x ==
+                                                                             player.xPosition and
+                                                                             joker_y ==
+                                                                             player.yPosition):
+                print("Cannot perform swap on card occupied by self or the opponent! "
+                      "Please select another card to swap..")
+                return False
+
+            elif moves.check_swap(x, y, joker_x, joker_y):
+                board.card_position[joker_x][joker_y], board.card_position[x][y] = (
+                    board.card_position[x][y], "JOKER")
+                print(
+                    "\nValid swap!\nJOKER swapped from [{}][{}] to [{}][{}]".format(joker_x, joker_y, x,
+                                                                                    y))
+                moves.save_swap(joker_x, joker_y)
+                return True
+            else:
+                print("Invalid swap, try again!")
+                return False
+
+    @staticmethod
+    def get_move_coordinates():
+        x = int(input("X: "))
+        y = int(input("Y: "))
+        return x, y
+
+    def play_game(self):
+        # get names from the players
+        self.request_players_info()
+
+        player1 = self.player1
+        player2 = self.player2
+
+        while not self.game_over:
+            if self.player1_turn:
+                self.handle_player_move(player1, player2)
+
+                self.player1_turn = not self.player1_turn
+
+                self.board.display_board(player1.xPosition, player1.yPosition, player2.xPosition, player2.yPosition)
+
+                if moves.check_winning_move(player1.xPosition, player1.yPosition):
+                    self.game_over = True
+                    print("{} wins!".format(player1.name))
+                    break
+
+            else:
+                self.handle_player_move(player2, player1)
+
+                self.player1_turn = not self.player1_turn
+
+                self.board.display_board(player1.xPosition, player1.yPosition, player2.xPosition, player2.yPosition)
+
+                if moves.check_winning_move(player2.xPosition, player2.yPosition):
+                    self.game_over = True
+                    print("{} wins!".format(player2.name))
+                    break
 
     @staticmethod
     def play():

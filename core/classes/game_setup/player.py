@@ -1,6 +1,7 @@
 class Player:
     def __init__(self, name, player_number):
         self.name = name
+        self.player_number = player_number
         # Initialize an empty list for storing the player's moves
         self.moves = []
 
