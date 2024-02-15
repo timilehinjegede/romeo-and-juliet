@@ -1,3 +1,6 @@
+from core.enums.symbols import Symbols
+
+
 class Board:
     def __init__(self, pack):
         # Initialize the board with a pack of cards
@@ -39,10 +42,15 @@ class Board:
 
     def get_cell_content(self, i, j, p1x, p1y, p2x, p2y):
         # Get the content of a cell, formatted based on the cell's purpose
+        # the white (red) queen is in the bottom left corner which is i = 1 and j = 7
         if i == 1 and j == 7:
-            return self.format_position(p1x, p1y, p2x, p2y, i, j, "\u2655")
+            red_queen = Symbols.RED_QUEEN.value
+            return self.format_position(p1x, p1y, p2x, p2y, i, j, f"r.{red_queen}")
+
+        # the black (spade) queen is in the bottom left corner which is i = 7 and j = 1
         elif i == 7 and j == 1:
-            return self.format_position(p1x, p1y, p2x, p2y, i, j, "\u265B")
+            black_queen = Symbols.BLACK_QUEEN.value
+            return self.format_position(p1x, p1y, p2x, p2y, i, j, f"b.{black_queen}")
         else:
             return self.format_regular_cell(i, j, p1x, p1y, p2x, p2y)
 
@@ -50,9 +58,11 @@ class Board:
     def format_position(p1x, p1y, p2x, p2y, i, j, symbol):
         # Format a specific cell position based on player locations and the symbol
         if (p1x, p1y) == (i, j):
-            return f"(\u2654) |{symbol}|"
+            black_king = Symbols.BLACK_KING.value
+            return f"({black_king}) |{symbol}|"
         elif (p2x, p2y) == (i, j):
-            return f"(\u265A) |{symbol}|"
+            red_king = Symbols.RED_KING.value
+            return f"({red_king}) |{symbol}|"
         else:
             return f"|{symbol}|"
 
