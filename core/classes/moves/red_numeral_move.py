@@ -36,7 +36,7 @@ def suggest_red_numeral_moves(player, move_count, opponent):
     # Check potential moves in both directions
     for direction in [Direction.UP, Direction.DOWN]:
         x = get_x_position_count(player.xPosition, move_count, direction)
-        print("x is ({},{})".format(x, player.yPosition))
+        # print("x is ({},{})".format(x, player.yPosition))
 
         # Check if the move is valid
         if moves.check_move(x, player.yPosition, opponent.xPosition, opponent.yPosition, player.player_number):
