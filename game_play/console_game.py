@@ -24,8 +24,6 @@ class ConsoleGame:
         self.player2 = None
 
     def request_players_info(self):
-        # welcome both players to the romeo and juliet game
-        console_ui.game_welcome()
 
         # ask for the players to enter their names
         # player1_name = console_ui.ask_for_player_name(1)
