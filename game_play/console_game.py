@@ -112,8 +112,9 @@ class ConsoleGame:
             else:
                 self.player2.set_position(x, y)
 
-            console_ui.display_message('Valid Move!')
-            console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+            # console_ui.display_message('Valid Move!')
+            # console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+            console_ui.display_valid_move(player.name, chosen_move, self.board)
             console_ui.add_line_break()
 
         self.board.display_board(player.xPosition, player.yPosition, opponent.xPosition, opponent.yPosition)
@@ -128,9 +129,10 @@ class ConsoleGame:
                 self.player1.set_position(x, y)
             else:
                 self.player2.set_position(x, y)
-            console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
-                                                                                         player.xPosition,
-                                                                                         player.yPosition))
+            console_ui.display_valid_move(player.name, (x, y), self.board)
+            # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
+            #                                                                              player.xPosition,
+            #                                                                              player.yPosition))
             console_ui.add_line_break()
             return True
         else:
@@ -155,11 +157,12 @@ class ConsoleGame:
                 self.player1.set_position(x, y)
             else:
                 self.player2.set_position(x, y)
-            console_ui.display_message('Valid Move!')
+            # console_ui.display_message('Valid Move!')
             # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
             #                                                                              player.xPosition,
             #                                                                              player.yPosition))
-            console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+            # console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+            console_ui.display_valid_move(player.name, chosen_move, self.board)
             console_ui.add_line_break()
             return True
         else:
@@ -184,8 +187,9 @@ class ConsoleGame:
                 # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
                 #                                                                              player.xPosition,
                 #                                                                              player.yPosition))
-                console_ui.display_message('Valid Move!')
-                console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+                # console_ui.display_message('Valid Move!')
+                # console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+                console_ui.display_valid_move(player.name, chosen_move, self.board)
 
                 console_ui.add_line_break()
             return True
@@ -220,8 +224,10 @@ class ConsoleGame:
                 # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
                 #                                                                              player.xPosition,
                 #                                                                              player.yPosition))
-                console_ui.display_message('Valid Move!')
-                console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+                # console_ui.display_message('Valid Move!')
+                # console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+                console_ui.display_valid_move(player.name, chosen_move, self.board)
+
                 console_ui.add_line_break()
                 return True
 
@@ -251,8 +257,10 @@ class ConsoleGame:
                 # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
                 #                                                                              player.xPosition,
                 #                                                                              player.yPosition))
-                console_ui.display_message('Valid Move!')
-                console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+                # console_ui.display_message('Valid Move!')
+                # console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+                console_ui.display_valid_move(player.name, chosen_move, self.board)
+
                 console_ui.add_line_break()
                 return True
 
@@ -266,10 +274,10 @@ class ConsoleGame:
         while not self.is_joker:
             jokers_suggestions = suggest_joker_positions(self.board, self.player1, self.player2)
 
-            chosen_move = moves.choose_move_from_suggestions(jokers_suggestions, self.board, False)
+            chosen_joker = moves.choose_move_from_suggestions(jokers_suggestions, self.board, False)
 
-            joker_x = chosen_move[0]
-            joker_y = chosen_move[1]
+            joker_x = chosen_joker[0]
+            joker_y = chosen_joker[1]
 
             # handle list out of range
             card = board.get_card_string(joker_x, joker_y)
@@ -314,11 +322,12 @@ class ConsoleGame:
                 valid_move = False
 
             elif moves.check_swap(x, y, joker_x, joker_y):
+                console_ui.display_valid_swap(player.name, (joker_x, joker_y), (x, y), self.board)
                 board.card_position[joker_x][joker_y], board.card_position[x][y] = (
                     board.card_position[x][y], "[ JOKER ]")
-                console_ui.display_message(
-                    "Valid swap!\nJOKER swapped from [{}][{}] to [{}][{}]".format(joker_x, joker_y, x,
-                                                                                  y))
+                # console_ui.display_message(
+                #     "Valid swap!\nJOKER swapped from [{}][{}] to [{}][{}]".format(joker_x, joker_y, x,
+                #                                                                   y))
                 console_ui.add_line_break()
                 moves.save_swap(joker_x, joker_y)
                 valid_move = True
