@@ -70,6 +70,7 @@ class Board:
         # Format a regular cell with a card or a player symbol
         piece = "\u2654" if (p1x, p1y) == (i, j) else "\u265A" if (p2x, p2y) == (i, j) else " "
         card = self.card_position[i][j]
+
         return f"{piece}{card}" if card else " "
 
     def get_card_string(self, x, y):

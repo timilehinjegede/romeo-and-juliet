@@ -1,9 +1,11 @@
 from core.classes.game_setup.player import Player
 from core.classes.moves import moves
 from core.classes.moves.black_numeral_move import suggest_black_numeral_moves
+from core.classes.moves.joker_move import suggest_joker_positions
 from core.classes.moves.king_move import suggest_king_moves
 from core.classes.moves.knight_move import suggest_knight_moves
 from core.classes.moves.red_numeral_move import suggest_red_numeral_moves
+from core.classes.moves.swap import Swap
 from core.enums.direction import Direction
 from interface.console import console_ui
 
@@ -257,12 +259,17 @@ class ConsoleGame:
     def handle_swap_card(self, player, opponent):
         board = self.board
         joker_x, joker_y = 0, 0
-        console_ui.display_message("\nEnter JOKER position..")
+        console_ui.add_line_break()
+        console_ui.display_message("Choose a JOKER position...")
         self.is_joker = False
 
         while not self.is_joker:
-            joker_x = int(input("X: "))
-            joker_y = int(input("Y: "))
+            jokers_suggestions = suggest_joker_positions(self.board, self.player1, self.player2)
+
+            chosen_move = moves.choose_move_from_suggestions(jokers_suggestions, self.board, False)
+
+            joker_x = chosen_move[0]
+            joker_y = chosen_move[1]
 
             # handle list out of range
             card = board.get_card_string(joker_x, joker_y)
@@ -272,22 +279,28 @@ class ConsoleGame:
             else:
                 console_ui.display_message("Card is not a JOKER card, try again!")
 
-        console_ui.display_message("\nEnter card position..")
-        self.valid_move = False
+        console_ui.display_message("Choose a card position...")
+        valid_move = False
 
-        while not self.valid_move:
-            x = int(input("X: "))
-            y = int(input("Y: "))
+        while not valid_move:
+
+            swap_suggestions = Swap.suggest_swap_moves(joker_x, joker_y, player, opponent, moves.last_x_swap(),
+                                                       moves.last_y_swap(), self.board)
+
+            chosen_move = moves.choose_move_from_suggestions(swap_suggestions, self.board, False, True)
+
+            x = chosen_move[0]
+            y = chosen_move[1]
 
             if moves.last_x_swap() == x and moves.last_y_swap() == y:
                 console_ui.display_message(
                     "Cannot perform swap on the same card again! Please select another card to swap..")
-                return False
+                valid_move = False
 
             elif "JOKER" in board.get_card_string(x, y):
                 console_ui.display_message("Cannot perform swap of joker with joker! Please select another card to "
                                            "swap..")
-                return False
+                valid_move = False
 
             elif (x == opponent.xPosition and y == opponent.yPosition) or (joker_x == opponent.xPosition
                                                                            and joker_y ==
@@ -298,20 +311,20 @@ class ConsoleGame:
                                                                              player.yPosition):
                 console_ui.display_message("Cannot perform swap on card occupied by self or the opponent! "
                                            "Please select another card to swap..")
-                return False
+                valid_move = False
 
             elif moves.check_swap(x, y, joker_x, joker_y):
                 board.card_position[joker_x][joker_y], board.card_position[x][y] = (
-                    board.card_position[x][y], "JOKER")
+                    board.card_position[x][y], "[ JOKER ]")
                 console_ui.display_message(
                     "Valid swap!\nJOKER swapped from [{}][{}] to [{}][{}]".format(joker_x, joker_y, x,
                                                                                   y))
                 console_ui.add_line_break()
                 moves.save_swap(joker_x, joker_y)
-                return True
+                valid_move = True
             else:
                 console_ui.display_message("Invalid swap, try again!")
-                return False
+                valid_move = False
 
     @staticmethod
     def get_move_coordinates():

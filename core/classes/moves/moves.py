@@ -83,29 +83,38 @@ def last_y_swap():
     return Swap().get_swap_y()
 
 
-def choose_move_from_suggestions(move_suggestions, board):
+def choose_move_from_suggestions(move_suggestions, board, is_move=True, is_swap=False):
     """
     Displays a list of move suggestions and asks the user to choose one.
 
     :param move_suggestions: List of tuples representing move coordinates
     :param board: the board
+    :param is_move: a move or a swap
+    :param is_swap: if it is a swap
     :return: Tuple of the chosen move (x, y)
     """
     while True:
         console_ui.add_line_break()
-        console_ui.display_message('List of possible moves:')
+        title = "List of possible moves:" if is_move else "List of Jokers:"
+        swap_title = "List of cards to swap with:"
+        console_ui.display_message(swap_title if is_swap else title)
         # Display the list of move suggestions
         for index, move in enumerate(move_suggestions, start=1):
             card_face = board.get_card_string(move[0], move[1])
-            print(f"{index}: Move to {move}, which has {card_face}")
+            option = f"{index}: Move to {move}, which has {card_face}" if is_move \
+                else f"{index}: Choose card at {move}, which has {card_face}"
+            print(option)
 
         # Ask the user to choose a move
         try:
-            choice = int(input("Choose a move (enter a number): "))
+            prompt = "Move" if is_move else ("Card" if is_swap else "Joker")
+            # prompt = "Choose a move" if is_move else "Choose a move"
+            choice = int(input("Choose a {} (enter a number): ".format(prompt)))
             if 1 <= choice <= len(move_suggestions):
                 console_ui.add_line_break()
                 return move_suggestions[choice - 1]
             else:
-                print("Invalid selection. Please choose a valid move number.")
+                prompt = "Move" if is_move else ("Card" if is_swap else "Joker")
+                print("Invalid selection. Please choose a valid {} number.".format(prompt))
         except ValueError:
             print("Invalid input. Please enter a number.")
