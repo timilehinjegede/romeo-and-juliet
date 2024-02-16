@@ -29,9 +29,9 @@ class ConsoleGame:
 
         # ask for the players to enter their names
         # player1_name = console_ui.ask_for_player_name(1)
-        player1_name = "John (Player 1)"
+        player1_name = "Carl (Player 1)"
         # player2_name = console_ui.ask_for_player_name(2)
-        player2_name = "Doe (Player 2)"
+        player2_name = "Jake (Player 2)"
 
         # create the players
         self.player1 = Player(player1_name, 1)
