@@ -380,4 +380,4 @@ class ConsoleGame:
 
             # if not self.player1_turn:  # This means Player 2 just completed their turn
             self.turn += 1
-            console_ui.display_message('===== Game Ended =====')
+        console_ui.display_message('===== Game Ended =====')
