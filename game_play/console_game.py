@@ -1,7 +1,9 @@
-from core.classes.game_setup.board import Board
-from core.classes.game_setup.pack import Pack
 from core.classes.game_setup.player import Player
 from core.classes.moves import moves
+from core.classes.moves.black_numeral_move import suggest_black_numeral_moves
+from core.classes.moves.king_move import suggest_king_moves
+from core.classes.moves.knight_move import suggest_knight_moves
+from core.classes.moves.red_numeral_move import suggest_red_numeral_moves
 from core.enums.direction import Direction
 from interface.console import console_ui
 
@@ -42,8 +44,6 @@ class ConsoleGame:
 
         console_ui.add_line_break()
 
-        console_ui.display_message("{} makes the opening MOVE!".format(player1_name))
-
         # display the initial board
         player1 = self.player1
         player2 = self.player2
@@ -55,13 +55,18 @@ class ConsoleGame:
             self.handle_initial_move(player, opponent)
 
         else:
-            console_ui.display_message("\n<Move {}>".format(self.turn))
+            # console_ui.display_message("\n<Move {}>".format(self.turn))
             choice = console_ui.turn_choice()
 
             if choice == 1:
                 self.handle_move_card(player, opponent)
             elif choice == 2:
                 self.handle_swap_card(player, opponent)
+
+    def display_current_card(self, player):
+        card_face = self.board.get_card_string(player.xPosition, player.yPosition)
+        console_ui.add_line_break()
+        console_ui.display_message("{} is currently on: {}".format(player.name, card_face))
 
     def handle_move_card(self, player, opponent):
         valid_move = False
@@ -75,12 +80,10 @@ class ConsoleGame:
                 valid_move = self.handle_joker_move(player, x, y, opponent)
             # king move
             elif "K" in card:
-                x, y = self.get_move_coordinates()
-                valid_move = self.handle_king_move(player, x, y, opponent)
+                valid_move = self.handle_king_move(player, opponent)
             # Jack move
             elif "J" in card:
-                x, y = self.get_move_coordinates()
-                valid_move = self.handle_knight_move(player, x, y, opponent)
+                valid_move = self.handle_knight_move(player, opponent)
             # black numeral card => SPADES OR CLUBS
             elif "\u2660" in card or "\u2663" in card:
                 valid_move = self.handle_black_numeral_move(player, opponent)
@@ -91,8 +94,25 @@ class ConsoleGame:
         self.valid_move = False
 
         while not self.valid_move:
-            x, y = self.get_move_coordinates()
-            self.valid_move = self.handle_king_move(player, x, y, opponent)
+            # x, y = self.get_move_coordinates()
+            self.display_current_card(player)
+            king_move_suggestions = suggest_king_moves(player.xPosition, player.yPosition, opponent.xPosition, opponent.
+                                                       yPosition, player.player_number)
+            chosen_move = moves.choose_move_from_suggestions(king_move_suggestions, self.board)
+
+            self.valid_move = True
+
+            x = chosen_move[0]
+            y = chosen_move[1]
+
+            if player.player_number == 1:
+                self.player1.set_position(x, y)
+            else:
+                self.player2.set_position(x, y)
+
+            console_ui.display_message('Valid Move!')
+            console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+            console_ui.add_line_break()
 
         self.board.display_board(player.xPosition, player.yPosition, opponent.xPosition, opponent.yPosition)
         self.turn += 1
@@ -106,15 +126,24 @@ class ConsoleGame:
                 self.player1.set_position(x, y)
             else:
                 self.player2.set_position(x, y)
-            console_ui.display_message("\nValid move!\n{}'s new position: [{}][{}]".format(player.name,
-                                                                                           player.xPosition,
-                                                                                           player.yPosition))
+            console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
+                                                                                         player.xPosition,
+                                                                                         player.yPosition))
+            console_ui.add_line_break()
             return True
         else:
             console_ui.display_message("Invalid move, try again!")
             return False
 
-    def handle_king_move(self, player, x, y, opponent):
+    def handle_king_move(self, player, opponent):
+        king_move_suggestions = suggest_king_moves(player.xPosition, player.yPosition, opponent.xPosition, opponent.
+                                                   yPosition, player.player_number)
+        chosen_move = moves.choose_move_from_suggestions(king_move_suggestions, self.board)
+
+        console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+
+        x = chosen_move[0]
+        y = chosen_move[1]
         if not moves.check_move(x, y, opponent.xPosition, opponent.yPosition, player.player_number):
             console_ui.display_message("Invalid move, try again!")
             return False
@@ -124,15 +153,24 @@ class ConsoleGame:
                 self.player1.set_position(x, y)
             else:
                 self.player2.set_position(x, y)
-            console_ui.display_message("\nValid move!\n{}'s new position: [{}][{}]".format(player.name,
-                                                                                           player.xPosition,
-                                                                                           player.yPosition))
+            console_ui.display_message('Valid Move!')
+            # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
+            #                                                                              player.xPosition,
+            #                                                                              player.yPosition))
+            console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+            console_ui.add_line_break()
             return True
         else:
             console_ui.display_message("Invalid move, try again!")
             return False
 
-    def handle_knight_move(self, player, x, y, opponent):
+    def handle_knight_move(self, player, opponent):
+        knight_move_suggestions = suggest_knight_moves(player, opponent)
+
+        chosen_move = moves.choose_move_from_suggestions(knight_move_suggestions, self.board)
+        x = chosen_move[0]
+        y = chosen_move[1]
+
         if not moves.check_move(x, y, opponent.xPosition, opponent.yPosition, player.player_number):
             print("Invalid move, try again!")
             return False
@@ -141,9 +179,13 @@ class ConsoleGame:
                 self.player1.set_position(x, y)
             else:
                 self.player2.set_position(x, y)
-                console_ui.display_message("\nValid move!\n{}'s new position: [{}][{}]".format(player.name,
-                                                                                               player.xPosition,
-                                                                                               player.yPosition))
+                # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
+                #                                                                              player.xPosition,
+                #                                                                              player.yPosition))
+                console_ui.display_message('Valid Move!')
+                console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+
+                console_ui.add_line_break()
             return True
         else:
             console_ui.display_message("Invalid move, try again!")
@@ -155,12 +197,10 @@ class ConsoleGame:
         card_face = board.get_card_string(player.xPosition, player.yPosition)
         move_count = int(card_face[1:3].strip())
 
-        # Ask player for the direction of the move (Right or Left)
-        console_ui.display_message(f"\nMove {move_count} steps, right or left (R/L): ")
-        rl = input()
-        direction = Direction.RIGHT if rl == 'R' else Direction.LEFT
+        black_numeral_move_suggestions = suggest_black_numeral_moves(player, move_count, opponent)
+        chosen_move = moves.choose_move_from_suggestions(black_numeral_move_suggestions, self.board)
 
-        y = moves.y_position_count(player.yPosition, move_count, direction)
+        y = chosen_move[1]
 
         if not moves.check_move(player.xPosition, y, opponent.xPosition,
                                 opponent.yPosition, 1):
@@ -175,9 +215,12 @@ class ConsoleGame:
                     self.player1.set_position(player.xPosition, y)
                 else:
                     self.player2.set_position(player.xPosition, y)
-                console_ui.display_message("\nValid move!\n{}'s new position: [{}][{}]".format(player.name,
-                                                                                               player.xPosition,
-                                                                                               player.yPosition))
+                # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
+                #                                                                              player.xPosition,
+                #                                                                              player.yPosition))
+                console_ui.display_message('Valid Move!')
+                console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+                console_ui.add_line_break()
                 return True
 
     def handle_red_numeral_move(self, player, opponent):
@@ -185,12 +228,10 @@ class ConsoleGame:
         card_face = board.get_card_string(player.xPosition, player.yPosition)
         move_count = int(card_face[1:3].strip())
 
-        # Ask player for the direction of the move (Up or Down)
-        console_ui.display_message(f"\nMove {move_count} steps, up or down (U/D): ")
-        rl = input()
-        direction = Direction.UP if rl == 'U' else Direction.DOWN
+        red_numeral_move_suggestions = suggest_red_numeral_moves(player, move_count, opponent)
+        chosen_move = moves.choose_move_from_suggestions(red_numeral_move_suggestions, self.board)
 
-        x = moves.x_position_count(player.xPosition, move_count, direction)
+        x = chosen_move[0]
 
         if not moves.check_move(x, player.yPosition, opponent.xPosition,
                                 opponent.yPosition, 1):
@@ -205,9 +246,12 @@ class ConsoleGame:
                     self.player1.set_position(x, player.yPosition)
                 else:
                     self.player2.set_position(x, player.yPosition)
-                console_ui.display_message("\nValid move!\n{}'s new position: [{}][{}]".format(player.name,
-                                                                                               player.xPosition,
-                                                                                               player.yPosition))
+                # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
+                #                                                                              player.xPosition,
+                #                                                                              player.yPosition))
+                console_ui.display_message('Valid Move!')
+                console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+                console_ui.add_line_break()
                 return True
 
     def handle_swap_card(self, player, opponent):
@@ -260,8 +304,9 @@ class ConsoleGame:
                 board.card_position[joker_x][joker_y], board.card_position[x][y] = (
                     board.card_position[x][y], "JOKER")
                 console_ui.display_message(
-                    "\nValid swap!\nJOKER swapped from [{}][{}] to [{}][{}]".format(joker_x, joker_y, x,
-                                                                                    y))
+                    "Valid swap!\nJOKER swapped from [{}][{}] to [{}][{}]".format(joker_x, joker_y, x,
+                                                                                  y))
+                console_ui.add_line_break()
                 moves.save_swap(joker_x, joker_y)
                 return True
             else:
@@ -292,7 +337,12 @@ class ConsoleGame:
             current_player = self.player1 if self.player1_turn else self.player2
             opponent = self.player2 if self.player1_turn else self.player1
 
+            console_ui.add_line_break()
+
             console_ui.display_message("{}'s turn".format(current_player.name))
+            self.display_current_card(current_player)
+            console_ui.add_line_break()
+
             self.handle_player_move(current_player, opponent)
 
             if moves.check_winning_move(current_player.xPosition, current_player.yPosition):

@@ -4,6 +4,7 @@ from core.classes.moves.joker_move import joker_move
 from core.classes.moves.king_move import king_move
 from core.classes.moves.knight_move import knight_move
 from core.classes.moves.swap import Swap
+from interface.console import console_ui
 
 
 def check_knight_move(x, y, new_x, new_y):
@@ -80,3 +81,31 @@ def last_x_swap():
 
 def last_y_swap():
     return Swap().get_swap_y()
+
+
+def choose_move_from_suggestions(move_suggestions, board):
+    """
+    Displays a list of move suggestions and asks the user to choose one.
+
+    :param move_suggestions: List of tuples representing move coordinates
+    :param board: the board
+    :return: Tuple of the chosen move (x, y)
+    """
+    while True:
+        console_ui.add_line_break()
+        console_ui.display_message('List of possible moves:')
+        # Display the list of move suggestions
+        for index, move in enumerate(move_suggestions, start=1):
+            card_face = board.get_card_string(move[0], move[1])
+            print(f"{index}: Move to {move}, which has {card_face}")
+
+        # Ask the user to choose a move
+        try:
+            choice = int(input("Choose a move (enter a number): "))
+            if 1 <= choice <= len(move_suggestions):
+                console_ui.add_line_break()
+                return move_suggestions[choice - 1]
+            else:
+                print("Invalid selection. Please choose a valid move number.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")

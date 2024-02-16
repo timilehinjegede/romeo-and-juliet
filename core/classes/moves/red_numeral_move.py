@@ -1,3 +1,4 @@
+from core.classes.moves import moves
 from core.enums.direction import Direction
 
 
@@ -25,3 +26,20 @@ def get_x_position_count(x_position, move_count, direction):
     # Return 0 for invalid direction input
     else:
         return 0
+
+
+def suggest_red_numeral_moves(player, move_count, opponent):
+    """
+    Suggest all valid moves for a player on a red numeral card.
+    """
+    potential_moves = []
+    # Check potential moves in both directions
+    for direction in [Direction.UP, Direction.DOWN]:
+        x = get_x_position_count(player.xPosition, move_count, direction)
+        print("x is ({},{})".format(x, player.yPosition))
+
+        # Check if the move is valid
+        if moves.check_move(x, player.yPosition, opponent.xPosition, opponent.yPosition, player.player_number):
+            potential_moves.append((x, player.yPosition))
+
+    return potential_moves

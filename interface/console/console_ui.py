@@ -23,10 +23,11 @@ def display_message(message):
 
 def turn_choice():
     choice = 0
+    display_message('Select an option:')
 
     while choice < 1 or choice > 2:
-        print("\n1. Make a move\n2. Swap a card")
-        choice = int(input("Enter your choice (1 or 2): "))
+        print("1. Make a move\n2. Swap a card")
+        choice = int(input("Choose (enter a number) (1 or 2): "))
 
     return choice
 
