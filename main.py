@@ -5,6 +5,9 @@ from core.classes.game_setup.pack import Pack
 
 
 def main():
+    # welcome both players to the romeo and juliet game
+    console_ui.game_welcome()
+
     # create the pack of cards to be used for the gameplay
     console_ui.display_message('Creating the game...')
     # create the packs of card to be used
