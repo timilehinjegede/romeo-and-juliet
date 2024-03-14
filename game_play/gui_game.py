@@ -31,6 +31,8 @@ class GUIGame:
         # hide the root window
         self.game_screen.withdraw()
 
+        self.passed_welcome = False
+
     def request_players_info(self):
 
         intro_window = tk.Toplevel()
@@ -38,7 +40,8 @@ class GUIGame:
 
         gui.center_window(intro_window, 900, 900)
 
-        play_with_human_button = tk.Button(intro_window, text="Play with Human", command=lambda: self.play_with_human(intro_window))
+        play_with_human_button = tk.Button(intro_window, text="Play with Human",
+                                           command=lambda: self.play_with_human(intro_window))
         play_with_ai_button = tk.Button(intro_window, text="Play with AI", command=self.play_with_ai)
         game_rules_button = tk.Button(intro_window, text="Game Rules", command=gui.show_game_rules)
 
@@ -67,6 +70,59 @@ class GUIGame:
         # player1 = self.player1
         # player2 = self.player2
         # self.board.display_board(player1.xPosition, player1.yPosition, player2.xPosition, player2.yPosition)
+
+    # Define the player sections
+    @staticmethod
+    def create_player_section(parent, player_name, nomination):
+        frame = tk.Frame(parent)
+        name_label = tk.Label(frame, text=player_name, anchor='center', padx=10, pady=10)
+        name_label.pack(fill='both')
+        nomination_label = tk.Label(frame, text=nomination, anchor='center', padx=10, pady=10)
+        nomination_label.pack(fill='both')
+        return frame
+
+    def show_game_layout(self):
+        root = self.game_screen
+
+        # Section 1 - Player 1
+        player1_frame = self.create_player_section(root, "Player 1 Name", "Nomination")
+        player1_frame.grid(row=0, column=0, sticky='nswe')
+
+        # Section 3 - Player 2
+        player2_frame = self.create_player_section(root, "Player 2 Name", "Nomination")
+        player2_frame.grid(row=0, column=8, sticky='nswe')
+
+        # Section 2 - Card Grid (7x7)
+        card_frame = tk.Frame(root)
+        card_frame.grid(row=0, column=1, columnspan=7, sticky='nswe')
+        card_buttons = [[tk.Button(card_frame, text='', width=12, height=6) for _ in range(7)] for _ in range(7)]
+        for i in range(7):
+            for j in range(7):
+                card_buttons[i][j].grid(row=i, column=j, sticky='nswe', padx=5, pady=5)
+                # Attach game logic as needed
+
+        # Configure the grid weight
+        root.grid_rowconfigure(0, weight=1)
+        for i in range(7):
+            root.grid_columnconfigure(i + 1, weight=1)
+            card_frame.grid_rowconfigure(i, weight=1)
+            card_frame.grid_columnconfigure(i, weight=1)
+
+        # Player sections weight configuration
+        root.grid_columnconfigure(0, weight=1)
+        root.grid_columnconfigure(8, weight=1)
+
+        # Label inputs below the card grid
+        input_frame = tk.Frame(root)
+        input_frame.grid(row=1, column=1, columnspan=7, pady=20)
+
+        label_inputs = ['Label 1', 'Label 2', 'Label 3', 'Label 4']
+        entries = []
+        for idx, label in enumerate(label_inputs):
+            tk.Label(input_frame, text=label).grid(row=0, column=idx, padx=10)
+            entry = tk.Entry(input_frame)
+            entry.grid(row=1, column=idx, padx=10)
+            entries.append(entry)
 
     def handle_player_move(self, player, opponent):
 
@@ -374,28 +430,43 @@ class GUIGame:
 
         intro_window.destroy()
 
+        self.passed_welcome = True
+
         self.show_game_screen()
 
     def show_game_screen(self):
-        self.game_screen.deiconify()
 
         root = self.game_screen
         root.title("Welcome to Romeo and Juliet Game")
 
         gui.center_window(root, 1600, 1200)
 
-        root.mainloop()
+        root.deiconify()
+
+        print('WITHOUT CLOSING HERE')
+
+        # continue the game play here
+        self.play_game()
 
     @staticmethod
     def play_with_ai():
         gui.messagebox.showinfo("Coming Soon", "Play with AI feature is coming soon!")
 
     def play_game(self):
-        print('hello')
-        print(self.board)
 
-        # get names from the players
-        self.request_players_info()
+        if not self.passed_welcome:
+            print('hello')
+            print(self.board)
+
+            # get names from the players
+            self.request_players_info()
+
+            print('IS IT HETTIGN HERE BEFORE THERE')
+        else:
+            print('WHAT NEXT HERE')
+
+            # continue your logic bro
+            self.show_game_layout()
 
         # destroy all the buttons and show the board
         # play_with_human_button.destroy()
