@@ -21,6 +21,7 @@ class GUIGame:
         self.is_joker = False
         self.turn = 1
         self.is_first_move = True
+        self.card_labels = [[None for _ in range(7)] for _ in range(7)]  # 7x7 grid for labels
 
         # players
         self.player1 = None
@@ -79,30 +80,55 @@ class GUIGame:
         name_label.pack(fill='both')
         nomination_label = tk.Label(frame, text=nomination, anchor='center', padx=10, pady=10)
         nomination_label.pack(fill='both')
+
+        # only show this if it is the players turn
+        # "Your turn" label
+        turn_label = tk.Label(frame, text="Your turn", anchor='center', padx=10, pady=10)
+        turn_label.pack(fill='both')
+
+        # Buttons
+        button1 = tk.Button(frame, text="Make a Move")
+        button1.pack(side=tk.LEFT, padx=5, pady=10)
+        button2 = tk.Button(frame, text="Swap a Card")
+        button2.pack(side=tk.RIGHT, padx=5, pady=10)
+
         return frame
 
     def show_game_layout(self):
         root = self.game_screen
 
         # Section 1 - Player 1
-        player1_frame = self.create_player_section(root, "Player 1 Name", "Nomination")
+        player1_frame = self.create_player_section(root, self.player1.name, "RED PLAYER")
         player1_frame.grid(row=0, column=0, sticky='nswe')
 
         # Section 3 - Player 2
-        player2_frame = self.create_player_section(root, "Player 2 Name", "Nomination")
+        player2_frame = self.create_player_section(root, self.player2.name, "BLACK PLAYER")
         player2_frame.grid(row=0, column=8, sticky='nswe')
 
         # Section 2 - Card Grid (7x7)
+        # Section 2 - Card Grid (7x7)
+        # Initialize a 7x7 grid of Labels to hold card images
         card_frame = tk.Frame(root)
         card_frame.grid(row=0, column=1, columnspan=7, sticky='nswe')
-        card_buttons = [[tk.Button(card_frame, text='', width=12, height=6) for _ in range(7)] for _ in range(7)]
+
+        self.card_labels = [[tk.Label(card_frame) for _ in range(7)] for _ in range(7)]
         for i in range(7):
             for j in range(7):
-                card_buttons[i][j].grid(row=i, column=j, sticky='nswe', padx=5, pady=5)
-                # Attach game logic as needed
+                # Get the image for the card at the current position
+                card_image_path = self.board.get_card_image(i + 1, j + 1)  # Assuming 1-indexed positions
+                if card_image_path and card_image_path != "No card at this position":
+                    card_image = tk.PhotoImage(file=card_image_path)
+                else:
+                    # You might want to have a default image for empty spaces or a placeholder
+                    card_image = tk.PhotoImage()  # Placeholder for an empty image
+
+                self.card_labels[i][j].config(image=card_image)
+                self.card_labels[i][j].image = card_image  # Keep a reference
+                self.card_labels[i][j].grid(row=i, column=j, sticky='nswe', padx=5, pady=5)
 
         # Configure the grid weight
         root.grid_rowconfigure(0, weight=1)
+
         for i in range(7):
             root.grid_columnconfigure(i + 1, weight=1)
             card_frame.grid_rowconfigure(i, weight=1)
