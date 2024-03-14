@@ -1,4 +1,5 @@
 import tkinter as tk
+from PIL import Image, ImageTk
 
 from core.classes.game_setup.player import Player
 from core.classes.moves import moves
@@ -111,19 +112,28 @@ class GUIGame:
         card_frame = tk.Frame(root)
         card_frame.grid(row=0, column=1, columnspan=7, sticky='nswe')
 
+        card_width = root.winfo_width() // 9  # Assuming there are 9 columns in the grid
+        card_height = root.winfo_height() // 8  # Assuming there are 8 rows in the grid
+
+        # Initialize a 7x7 grid of Labels to hold card images
         self.card_labels = [[tk.Label(card_frame) for _ in range(7)] for _ in range(7)]
         for i in range(7):
             for j in range(7):
                 # Get the image for the card at the current position
                 card_image_path = self.board.get_card_image(i + 1, j + 1)  # Assuming 1-indexed positions
                 if card_image_path and card_image_path != "No card at this position":
-                    card_image = tk.PhotoImage(file=card_image_path)
+                    # Open the image file
+                    img = Image.open(card_image_path)
+                    # Resize the image
+                    img = img.resize((card_width, card_height), Image.ANTIALIAS)
+                    card_image = ImageTk.PhotoImage(img)
                 else:
                     # You might want to have a default image for empty spaces or a placeholder
-                    card_image = tk.PhotoImage()  # Placeholder for an empty image
+                    card_image = None  # Placeholder for an empty image
 
-                self.card_labels[i][j].config(image=card_image)
-                self.card_labels[i][j].image = card_image  # Keep a reference
+                if card_image:  # Only configure the label if there's an image
+                    self.card_labels[i][j].config(image=card_image)
+                    self.card_labels[i][j].image = card_image  # Keep a reference
                 self.card_labels[i][j].grid(row=i, column=j, sticky='nswe', padx=5, pady=5)
 
         # Configure the grid weight
