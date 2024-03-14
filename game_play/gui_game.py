@@ -1,6 +1,6 @@
 import tkinter as tk
-from PIL import Image, ImageTk
 
+from tkinter.font import Font
 from core.classes.game_setup.player import Player
 from core.classes.moves import moves
 from core.classes.moves.black_numeral_move import suggest_black_numeral_moves
@@ -11,7 +11,7 @@ from core.classes.moves.red_numeral_move import suggest_red_numeral_moves
 from core.classes.moves.swap import Swap
 from interface.console import console_ui
 from interface.gui import gui
-
+from PIL import Image, ImageTk
 
 class GUIGame:
     def __init__(self, board):
@@ -34,6 +34,7 @@ class GUIGame:
         self.game_screen.withdraw()
 
         self.passed_welcome = False
+
 
     def request_players_info(self):
 
@@ -75,23 +76,43 @@ class GUIGame:
 
     # Define the player sections
     @staticmethod
-    def create_player_section(parent, player_name, nomination):
+    def create_player_section(parent, player_name, nomination, player_number):
         frame = tk.Frame(parent)
-        name_label = tk.Label(frame, text=player_name, anchor='center', padx=10, pady=10)
+    
+        # Define a larger font
+        large_font = Font(size=12)  # Adjust the size as needed
+
+        # Player number label
+        name_label = tk.Label(frame, text='Player {}'.format(player_number), anchor='center', padx=10, pady=10)
+        name_label['font'] = large_font
+        name_label.pack(fill='both', pady=15)
+
+        # Player name label 
+        name_label = tk.Label(frame, text='Player Name: ', anchor='center', padx=10)
+        name_label['font'] = Font(size = 10)
         name_label.pack(fill='both')
+        name_label = tk.Label(frame, text=player_name, anchor='center', padx=10, pady=10)
+        name_label['font'] = large_font
+        name_label.pack(fill='both')
+
+        # Nomination label
         nomination_label = tk.Label(frame, text=nomination, anchor='center', padx=10, pady=10)
+        nomination_label['font'] = large_font
         nomination_label.pack(fill='both')
 
-        # only show this if it is the players turn
-        # "Your turn" label
+        # "Your turn" label (shown conditionally, adjust this as per your logic)
         turn_label = tk.Label(frame, text="Your turn", anchor='center', padx=10, pady=10)
+        turn_label['font'] = large_font
         turn_label.pack(fill='both')
 
-        # Buttons
-        button1 = tk.Button(frame, text="Make a Move")
-        button1.pack(side=tk.LEFT, padx=5, pady=10)
-        button2 = tk.Button(frame, text="Swap a Card")
-        button2.pack(side=tk.RIGHT, padx=5, pady=10)
+        # Buttons with color
+        button1 = tk.Button(frame, text="Make a Move", bg='green', fg='white')
+        button1['font'] = large_font
+        button1.pack(pady=10)
+
+        button2 = tk.Button(frame, text="Swap a Card", bg='blue', fg='white')
+        button2['font'] = large_font
+        button2.pack(pady=10)
 
         return frame
 
@@ -99,11 +120,11 @@ class GUIGame:
         root = self.game_screen
 
         # Section 1 - Player 1
-        player1_frame = self.create_player_section(root, self.player1.name, "RED PLAYER")
+        player1_frame = self.create_player_section(root, self.player1.name, "RED PLAYER", 1)
         player1_frame.grid(row=0, column=0, sticky='nswe')
 
         # Section 3 - Player 2
-        player2_frame = self.create_player_section(root, self.player2.name, "BLACK PLAYER")
+        player2_frame = self.create_player_section(root, self.player2.name, "BLACK PLAYER", 2)
         player2_frame.grid(row=0, column=8, sticky='nswe')
 
         # Section 2 - Card Grid (7x7)
@@ -119,13 +140,19 @@ class GUIGame:
         self.card_labels = [[tk.Label(card_frame) for _ in range(7)] for _ in range(7)]
         for i in range(7):
             for j in range(7):
+                if (i, j) == (0, 6):  # Top left position for red queen
+                    card_image_path = 'resources/card_images/queen_of_hearts.png'
+                elif (i, j) == (6, 0):  # Bottom left position for black queen
+                    card_image_path = 'resources/card_images/queen_of_spades.png'
+                else:
                 # Get the image for the card at the current position
-                card_image_path = self.board.get_card_image(i + 1, j + 1)  # Assuming 1-indexed positions
+                    card_image_path = self.board.get_card_image(i + 1, j + 1)  # Assuming 1-indexed positions
+
                 if card_image_path and card_image_path != "No card at this position":
                     # Open the image file
                     img = Image.open(card_image_path)
                     # Resize the image
-                    img = img.resize((card_width, card_height), Image.ANTIALIAS)
+                    img = img.resize((80, 120), Image.BOX)
                     card_image = ImageTk.PhotoImage(img)
                 else:
                     # You might want to have a default image for empty spaces or a placeholder
@@ -475,7 +502,7 @@ class GUIGame:
         root = self.game_screen
         root.title("Welcome to Romeo and Juliet Game")
 
-        gui.center_window(root, 1600, 1200)
+        gui.center_window(root, 1400, 1000)
 
         root.deiconify()
 
