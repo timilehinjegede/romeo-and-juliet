@@ -45,6 +45,9 @@ class GUIGame:
 
         self.is_swapping_card = False
 
+        self.last_x_swap = -1
+        self.last_y_swap = -1
+
         self.is_valid_move = tk.StringVar()
 
         self.turn_labels = {}  # Dictionary to store turn labels for each player
@@ -214,13 +217,13 @@ class GUIGame:
                     img = img.resize((card_width, card_height), Image.BOX)
 
                     if (i, j) == (self.player1.xPosition, self.player1.yPosition):
-                        king_img = self.black_king
+                        king_img = self.red_king
                         king_width, king_height = king_img.size
                         x = (card_width - king_width) // 2
                         y = (card_height - king_height) // 2
                         img.paste(king_img, (x, y), king_img)
                     elif (i, j) == (self.player2.xPosition, self.player2.yPosition):
-                        king_img = self.red_king
+                        king_img = self.black_king
                         king_width, king_height = king_img.size
                         x = (card_width - king_width) // 2
                         y = (card_height - king_height) // 2
@@ -606,10 +609,10 @@ class GUIGame:
 
             self.game_screen.wait_variable(self.is_valid_move)
 
-            x, y = map(int, self.is_valid_move.get().split(", "))
+            jx, jy = map(int, self.is_valid_move.get().split(", "))
 
-            joker_x = x + 1
-            joker_y = y + 1
+            joker_x = jx + 1
+            joker_y = jy + 1
 
             # handle list out of range
             card = self.board.get_card_string(joker_x, joker_y)
@@ -640,21 +643,25 @@ class GUIGame:
             self.game_screen.wait_variable(self.is_valid_move)
 
             x, y = map(int, self.is_valid_move.get().split(", "))
+            x = x + 1
+            y = y + 1
 
-            if moves.last_x_swap() == x + 1 and moves.last_y_swap() == y + 1:
+            print("last swap is at", self.last_x_swap, self.last_y_swap)
+
+            if self.last_x_swap == x and self.last_y_swap == y :
                 gui.messagebox.showinfo("Invalid Selection", "Cannot perform swap on the same card again! Please select another card to swap..")
                 valid_move = False
 
-            elif "JOKER" in board.get_card_string(x + 1, y + 1):
+            elif "JOKER" in board.get_card_string(x, y):
                 gui.messagebox.showinfo("Invalid Selection" ,"Cannot perform swap of joker with joker! Please select another card to "
                                            "swap..")
 
                 valid_move = False
 
-            elif (x + 1 == opponent.xPosition and y + 1 == opponent.yPosition) or (joker_x == opponent.xPosition
+            elif (x == opponent.xPosition and y == opponent.yPosition) or (joker_x == opponent.xPosition
                                                                            and joker_y ==
                                                                            opponent.yPosition) \
-                    or (x + 1 == player.xPosition and y + 1 == player.yPosition) or (joker_x ==
+                    or (x == player.xPosition and y == player.yPosition) or (joker_x ==
                                                                              player.xPosition and
                                                                              joker_y ==
                                                                              player.yPosition):
@@ -662,40 +669,44 @@ class GUIGame:
                                            "Please select another card to swap..")
                 valid_move = False
 
-            elif moves.check_swap(x + 1, y + 1, joker_x, joker_y):
+            elif moves.check_swap(x, y, joker_x, joker_y):
                 print("Card position is at ", x, y)
                 print("Joker position is at ", joker_x, joker_y)
 
                 # console_ui.display_valid_swap(player.name, (joker_x, joker_y), (x, y), self.board)
-                self.board.card_position[joker_x-1][joker_y-1], board.card_position[x-1][y-1] = (
-                    board.card_position[x-1][y-1], Card(None, None, CardType.JOKER))
+                self.board.card_position[joker_x][joker_y] =  board.card_position[x][y]
+                self.board.card_position[x][y] = Card(None, None, CardType.JOKER)
+
+                
+
+                # Assuming x, y are the positions of the card to swap with the joker card
+                # joker_card = self.card_labels[joker_x - 1][joker_y - 1]
+                # target_card = self.card_labels[x-1][y-1]
+
+                # Swap images
+                # joker_image = joker_card.cget('image')
+                # target_image = target_card.cget('image')
+
+                # print("joker_image:", joker_image)
+                # print("target_image:", target_image)
+
+                # self.card_labels[joker_x - 1][joker_y - 1].config(image=target_image)
+                # self.card_labels[x - 1][y - 1].config(image=joker_image)
+
+                self.last_x_swap = joker_x
+                self.last_y_swap = joker_y
+
                 # console_ui.add_line_break()
                 if self.player1_turn:
                     self.turn_labels[1].config(text="Valid swap!!!")
                 else:
                     self.turn_labels[2].config(text="Valid swap!!!")
 
-                # Assuming x, y are the positions of the card to swap with the joker card
-                joker_card = self.card_labels[joker_x - 1][joker_y - 1]
-                target_card = self.card_labels[x][y]
-
-                # Swap images
-                joker_image = joker_card.cget('image')
-                target_image = target_card.cget('image')
-
-                print("joker_image:", joker_image)
-                print("target_image:", target_image)
-
-                joker_card.config(image=target_image)
-                target_card.config(image=joker_image)
-                # joker_card = self.card_labels[joker_x][joker_y]
-                # self.card_labels[joker_x][joker_y], self.card_labels[x + 1][y + 1] = (
-                #     self.card_labels[x + 1][y + 1], joker_card)
-                moves.save_swap(joker_x, joker_y)
                 self.highlighted_positions.clear()
-                valid_move = True
-
+                    
                 self.update_card_grid()
+
+                valid_move = True
             else:
                 gui.messagebox.showinfo("Invalid swap, try again!")
                 valid_move = False
@@ -716,7 +727,7 @@ class GUIGame:
         print('player1_name:', player1_name)
         print('player2_name:', player2_name)
 
-        self.player1 = Player(player1_name, 1)
+        self.player1 = Player(player1_name,1)
         self.player2 = Player(player2_name, 2)
 
         print('I HAVE PASSED HERE')
@@ -760,8 +771,8 @@ class GUIGame:
 
             # continue your logic bro
         self.show_game_screen()
-        self.player1 = Player("Carl (Player 1)", 1)
-        self.player2 = Player("Jake (Player 2)", 2)
+        self.player1 = Player("Timilehin (Player 1)", 1)
+        self.player2 = Player("Kennedy (Player 2)", 2)
         self.show_game_layout()
 
         # # Handle initial moves for both players
