@@ -43,9 +43,8 @@ class GUIGame:
 
         self.is_valid_move = tk.StringVar()
 
-        turn_label = tk.Label(self.game_screen, text="Opponent Move ", anchor='center', padx=10, pady=10, fg='red')
-        turn_label['font'] = Font(size=8)
-
+        self.turn_labels = {}  # Dictionary to store turn labels for each player
+    
     def request_players_info(self):
 
         intro_window = tk.Toplevel()
@@ -63,6 +62,11 @@ class GUIGame:
         game_rules_button.pack()
 
         intro_window.mainloop()
+
+        self.player1_move_button
+        self.player1_swap_button
+        self.player2_move_button
+        self.player2_swap_button
 
         # ask for the players to enter their names
         # player1_name = console_ui.ask_for_player_name(1)
@@ -84,9 +88,35 @@ class GUIGame:
         # player2 = self.player2
         # self.board.display_board(player1.xPosition, player1.yPosition, player2.xPosition, player2.yPosition)
 
+    def update_button_visibility(self):
+                # Update button visibility based on current player and whether it's an initial move
+        if self.is_first_move:
+            # If it's an initial move, hide buttons for both players
+            if hasattr(self, 'player1_move_button'):
+                self.player1_move_button.pack_forget()
+                self.player1_swap_button.pack_forget()
+            if hasattr(self, 'player2_move_button'):
+                self.player2_move_button.pack_forget()
+                self.player2_swap_button.pack_forget()
+            return
+        # Hide buttons for player 1 and show for player 2, or vice versa
+        if self.player1_turn:
+            if hasattr(self, 'player1_move_button'):
+                self.player1_move_button.pack(padx=5, pady=10)
+                self.player1_swap_button.pack(padx=5, pady=10)
+            if hasattr(self, 'player2_move_button'):
+                self.player2_move_button.pack_forget()
+                self.player2_swap_button.pack_forget()
+        else:
+            if hasattr(self, 'player2_move_button'):
+                self.player2_move_button.pack(padx=5, pady=10)
+                self.player2_swap_button.pack(padx=5, pady=10)
+            if hasattr(self, 'player1_move_button'):
+                self.player1_move_button.pack_forget()
+                self.player1_swap_button.pack_forget()
+
     # Define the player sections
-    @staticmethod
-    def create_player_section(parent, player_name, nomination, player_number):
+    def create_player_section(self, parent, player_name, nomination, player_number):
         frame = tk.Frame(parent)
     
         # Define a larger font
@@ -111,25 +141,51 @@ class GUIGame:
         nomination_label.pack(fill='both')
 
         # "Your turn" label (shown conditionally, adjust this as per your logic)
-        turn_label = tk.Label(frame, text="Your turn", anchor='center', padx=10, pady=10)
-        turn_label['font'] = large_font
+        # turn_label = tk.Label(frame, text="Your turn", anchor='center', padx=10, pady=10)
+        # turn_label['font'] = large_font
+        turn_label = tk.Label(frame, text="", anchor='center', padx=0, pady=0, fg='red', width=20, wraplength=150)
+        turn_label['font'] = Font(size=8)
         turn_label.pack(fill='both')
+        self.turn_labels[player_number] = turn_label 
 
         # Buttons with color
-        button1 = tk.Button(frame, text="Make a Move", bg='green', fg='white')
-        button1['font'] = large_font
-        button1.pack(pady=10)
+        # Button to make a move
+        move_button = tk.Button(frame, text="Make a Move", bg='green', fg='white', font=large_font,
+                                command=lambda: self.move_card())
 
-        button2 = tk.Button(frame, text="Swap a Card", bg='blue', fg='white')
-        button2['font'] = large_font
-        button2.pack(pady=10)
+        # Button to swap a card
+        swap_button = tk.Button(frame, text="Swap a Card", bg='blue', fg='white', font=large_font,
+                                command=lambda: self.swap_card())
+
+        # Store references to the buttons
+        if player_number == 1:
+            self.player1_move_button = move_button
+            self.player1_swap_button = swap_button
+        else:
+            self.player2_move_button = move_button
+            self.player2_swap_button = swap_button
 
         # "Your turn" label (shown conditionally, adjust this as per your logic)
         # if player_1_turn:
-        #     turn_label.pack(fill='both')
+        # turn_label.pack(fill='both')
 
         return frame
     
+    def display_label(self):
+        self.turn_labels[1].config(font=Font(size=12, weight='bold'))
+        self.turn_labels[2].config(font=Font(size=12, weight='bold'))
+        # is_player_1 = player.player_number == 1
+        p = self.player1 if self.player1_turn else self.player2
+        if self.is_first_move:
+            self.turn_labels[1].config(text="{}'s Turn for the initial move".format(p.name))
+            self.turn_labels[2].config(text="{}'s Turn for the initial move".format(p.name))
+        else:
+            self.turn_labels[1].config(text="{}'s Turn to make a move or swap a card".format(p.name))
+            self.turn_labels[2].config(text="{}'s Turn to make a move or swap a card".format(p.name))
+
+        self.turn_labels[1].pack(fill='both')
+        self.turn_labels[2].pack(fill='both')
+
     def update_card_grid(self):
         print("Updating the card grid => hightlighted positions:", self.highlighted_positions)
         card_width, card_height = 80, 120  # Set the dimensions for the card images
@@ -176,7 +232,9 @@ class GUIGame:
 
                 position = (i + 1, j + 1)
                 if position in self.highlighted_positions:
-                    self.card_labels[i][j].config(highlightthickness=3, highlightbackground='green')
+                    king_img = self.black_king if (i + 1, j + 1) == (self.player1.xPosition, self.player1.yPosition) else self.red_king
+                    color = 'red' if self.player1_turn else 'black'
+                    self.card_labels[i][j].config(highlightthickness=3, highlightbackground=color)
                     self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, True))
                 else:
                     self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, False))
@@ -245,8 +303,9 @@ class GUIGame:
                 self.card_labels[i][j].grid(row=i, column=j, sticky='nswe', padx=5, pady=5)
 
                 position = (i + 1, j + 1)
+                color = 'red' if self.player1_turn else 'black'
                 if position in self.highlighted_positions:
-                    self.card_labels[i][j].config(highlightthickness=3, highlightbackground='green')
+                    self.card_labels[i][j].config(highlightthickness=3, highlightbackground=color)
                     self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, True))
                 else:
                     self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, False))
@@ -263,9 +322,17 @@ class GUIGame:
         root.grid_columnconfigure(0, weight=1)
         root.grid_columnconfigure(8, weight=1)
 
-        # Label inputs below the card grid
-        input_frame = tk.Frame(root)
-        input_frame.grid(row=1, column=1, columnspan=7, pady=20)
+    def move_card(self):
+        current_player = self.player1 if self.player1_turn else self.player2
+        opponent = self.player2 if self.player1_turn else self.player1
+        self.handle_move_card(current_player, opponent)
+        self.display_label()
+
+    def swap_card(self):
+        current_player = self.player1 if self.player1_turn else self.player2
+        opponent = self.player2 if self.player1_turn else self.player1
+        self.handle_swap_card(current_player, opponent)
+        self.display_label()
 
     def on_card_click(self, x, y, is_valid):
         if is_valid:
@@ -292,13 +359,24 @@ class GUIGame:
             self.handle_move_card(player, opponent)
             # elif choice == 2:
                 # self.handle_swap_card(player, opponent)
-
+            
     def display_current_card(self, player):
         card_face = self.board.get_card_string(player.xPosition, player.yPosition)
         console_ui.add_line_break()
         console_ui.display_message("{} is currently on: {}".format(player.name, card_face))
+    
+    def make_move(self, player_number):
+        print(f"Player {player_number} is making a move.")
+        # Implement the logic for making a move
+        # This could involve updating the game state, player positions, etc.
+
+    def swap_card(self, player_number):
+        print(f"Player {player_number} is swapping a card.")
+        # Implement the logic for swapping a card
+        # This could involve changing a card in the player's hand, etc.
 
     def handle_move_card(self, player, opponent):
+        # self.update_button_visibility(player.player_number)
         valid_move = False
 
         while not valid_move:
@@ -318,6 +396,9 @@ class GUIGame:
                 valid_move = self.handle_black_numeral_move(player, opponent)
             elif "\u2661" in card or "\u2662" in card:
                 valid_move = self.handle_red_numeral_move(player, opponent)
+
+
+        self.on_make_move(player.player_number)
 
     def select_move(self, suggested_moves, player):
         self.highlighted_positions = suggested_moves
@@ -358,9 +439,16 @@ class GUIGame:
             # console_ui.add_line_break()
 
         # self.board.display_board(player.xPosition, player.yPosition, opponent.xPosition, opponent.yPosition)
-        self.turn += 1
+        # self.turn += 1
+        # self.player1_turn = not self.player1_turn
+        if self.is_first_move:
+            self.player1_turn = not self.player1_turn
+        print("Initial move completed")
+        print("player 1 turn is now:", self.player1_turn)
+        self.display_label()
 
     def handle_joker_move(self, player, opponent):
+        # self.display_label(player)
         joker_suggestions = get_possible_moves_to_joker(player.xPosition, player.yPosition, self.board)
 
         # chosen_move = moves.choose_move_from_suggestions(joker_suggestions, self.board)
@@ -374,26 +462,25 @@ class GUIGame:
 
         x, y = map(int, self.is_valid_move.get().split(", "))
 
-        if not moves.check_move(x, y, opponent.xPosition, opponent.yPosition, player.player_number):
-            gui.messagebox.showinfo("Invalid Move", "The card selected cannot be moved to, try again!")
-            return False
-        elif moves.joker_move(player.xPosition, player.yPosition, x, y):
-            if player.player_number == 1:
-                self.player1.set_position(x, y)
-            else:
-                self.player2.set_position(x, y)
+  
+        self.highlighted_positions.clear()
+        if player.player_number == 1:
+            self.player1.set_position(x + 1, y + 1)
+        else:
+            self.player2.set_position(x + 1, y + 1)
+            self.update_card_grid()
+            
             # console_ui.display_valid_move(player.name, (x, y), self.board)
             # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
             #                                                                              player.xPosition,
             #                                                                              player.yPosition))
             # console_ui.add_line_break()
             return True
-        else:
-            # console_ui.display_message("Invalid move, try again!")
-            gui.messagebox.showinfo("Invalid Move", "The card selected cannot be moved to!")
-            return False
 
     def handle_king_move(self, player, opponent):
+
+        # self.display_label(player)
+
         king_move_suggestions = suggest_king_moves(player.xPosition, player.yPosition, opponent.xPosition, opponent.
                                                    yPosition, player.player_number)
         # chosen_move = moves.choose_move_from_suggestions(king_move_suggestions, self.board)
@@ -404,6 +491,7 @@ class GUIGame:
 
 
     def handle_knight_move(self, player, opponent):
+        # self.display_label(player)
         knight_move_suggestions = suggest_knight_moves(player, opponent)
 
         self.select_move(knight_move_suggestions, player)
@@ -411,6 +499,8 @@ class GUIGame:
         return True
 
     def handle_black_numeral_move(self, player, opponent):
+        # self.display_label(player)
+
         board = self.board
 
         card_face = board.get_card_string(player.xPosition, player.yPosition)
@@ -448,6 +538,8 @@ class GUIGame:
         return True
 
     def handle_red_numeral_move(self, player, opponent):
+
+        self.display_label()
         board = self.board
         card_face = board.get_card_string(player.xPosition, player.yPosition)
         move_count = int(card_face[1:3].strip())
@@ -483,6 +575,7 @@ class GUIGame:
         return True
 
     def handle_swap_card(self, player, opponent):
+        self.update_button_visibility()
         board = self.board
         joker_x, joker_y = 0, 0
         console_ui.add_line_break()
@@ -550,6 +643,8 @@ class GUIGame:
                 console_ui.display_message("Invalid swap, try again!")
                 valid_move = False
 
+        self.on_make_move(player.player_number)
+
     @staticmethod
     def get_move_coordinates():
         x = int(input("X: "))
@@ -613,38 +708,69 @@ class GUIGame:
         self.show_game_layout()
 
         # # Handle initial moves for both players
-        console_ui.display_message("{}'s turn for the initial move".format(self.player1.name))
+        self.display_label()
+        self.update_button_visibility()
+
+        # console_ui.display_message("{}'s turn for the initial move".format(self.player1.name))
         self.handle_initial_move(self.player1, self.player2)
         
-        console_ui.display_message("{}'s turn for the initial move".format(self.player2.name))
+        self.display_label()
+        self.update_button_visibility()
+        # console_ui.display_message("{}'s turn for the initial move".format(self.player2.name))
         self.handle_initial_move(self.player2, self.player1)
-        
+
         # # After initial moves, continue with regular game loop
         self.is_first_move = False
+        self.update_card_grid()
+        self.update_button_visibility()
         
-        while not self.game_over:
-            current_player = self.player1 if self.player1_turn else self.player2
-            opponent = self.player2 if self.player1_turn else self.player1
+        # while not self.game_over:
+        #     current_player = self.player1 if self.player1_turn else self.player2
+        #     opponent = self.player2 if self.player1_turn else self.player1
         
-            # console_ui.add_line_break()
+        #     self.player1_turn = not self.player1_turn
+        #     # console_ui.add_line_break()
         
-            # console_ui.display_message("{}'s turn".format(current_player.name))
-            self.display_current_card(current_player)
-            # console_ui.add_line_break()
+        #     # console_ui.display_message("{}'s turn".format(current_player.name))
+        #     self.display_current_card(current_player)
+        #     # console_ui.add_line_break()
         
-            self.handle_player_move(current_player, opponent)
+        #     self.handle_player_move(current_player, opponent)
         
-            if moves.check_winning_move(current_player.xPosition, current_player.yPosition):
-                self.game_over = True
-                console_ui.display_message('')
-                console_ui.add_line_break()
-                console_ui.display_message("{} wins!".format(current_player.name))
-                console_ui.add_line_break()
+        #     if moves.check_winning_move(current_player.xPosition, current_player.yPosition):
+        #         self.game_over = True
+        #         console_ui.display_message('')
+        #         console_ui.add_line_break()
+        #         console_ui.display_message("{} wins!".format(current_player.name))
+        #         console_ui.add_line_break()
         
-            self.player1_turn = not self.player1_turn
-            self.board.display_board(self.player1.xPosition, self.player1.yPosition, self.player2.xPosition,
-                                     self.player2.yPosition)
+        #     self.player1_turn = not self.player1_turn
+        #     self.board.display_board(self.player1.xPosition, self.player1.yPosition, self.player2.xPosition,
+        #                              self.player2.yPosition)
         
-            # if not self.player1_turn:  # This means Player 2 just completed their turn
+        #     # if not self.player1_turn:  # This means Player 2 just completed their turn
+        #     self.turn += 1
+        # console_ui.display_message('===== Game Ended =====')
+        self.game_screen.mainloop()
+
+    def on_make_move(self, player_number):
+        self.player1_turn = not self.player1_turn
+        self.update_button_visibility()
+        self.update_card_grid()
+        # This method is triggered when a player makes a move
+        current_player = self.player1 if player_number == 1 else self.player2
+        # opponent = self.player2 if player_number == 1 else self.player1
+
+        # Handle the move
+        # self.handle_player_move(current_player, opponent)
+
+        # Check if the game is over
+        if moves.check_winning_move(current_player.xPosition, current_player.yPosition):
+            self.game_over = True
+            # Update UI to show the winning message
+
+        if not self.game_over:
+            # Switch turns
+            # self.player1_turn = not self.player1_turn
             self.turn += 1
-        console_ui.display_message('===== Game Ended =====')
+            self.update_card_grid()  #
