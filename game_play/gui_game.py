@@ -35,6 +35,16 @@ class GUIGame:
 
         self.passed_welcome = False
 
+        self.black_king = Image.open('resources/romeos/black_king.png').convert('RGBA')
+        self.red_king = Image.open('resources/romeos/red_king.png').convert('RGBA')
+
+        self.highlighted_positions = []
+        self.chosen_move = None
+
+        self.is_valid_move = tk.StringVar()
+
+        turn_label = tk.Label(self.game_screen, text="Opponent Move ", anchor='center', padx=10, pady=10, fg='red')
+        turn_label['font'] = Font(size=8)
 
     def request_players_info(self):
 
@@ -114,7 +124,57 @@ class GUIGame:
         button2['font'] = large_font
         button2.pack(pady=10)
 
+        # "Your turn" label (shown conditionally, adjust this as per your logic)
+        # if player_1_turn:
+        #     turn_label.pack(fill='both')
+
         return frame
+    
+    def update_card_grid(self):
+        card_width, card_height = 80, 120  # Set the dimensions for the card images
+
+        for i in range(7):
+            for j in range(7):
+                if (i, j) == (0, 6):  # Top left position for red queen
+                    card_image_path = 'resources/card_images/queen_of_hearts.png'
+                elif (i, j) == (6, 0):  # Bottom left position for black queen
+                    card_image_path = 'resources/card_images/queen_of_spades.png'
+                else:
+                    card_image_path = self.board.get_card_image(i + 1, j + 1)  # Assuming 1-indexed positions
+
+                if card_image_path and card_image_path != "No card at this position":
+                    img = Image.open(card_image_path)
+                    img = img.resize((card_width, card_height), Image.BOX)
+
+                    if (i + 1, j + 1) == (self.player1.xPosition, self.player1.yPosition):
+                        king_img = self.black_king
+                        king_width, king_height = king_img.size
+                        x = (card_width - king_width) // 2
+                        y = (card_height - king_height) // 2
+                        img.paste(king_img, (x, y), king_img)
+                    elif (i + 1, j + 1) == (self.player2.xPosition, self.player2.yPosition):
+                        king_img = self.red_king
+                        king_width, king_height = king_img.size
+                        x = (card_width - king_width) // 2
+                        y = (card_height - king_height) // 2
+                        img.paste(king_img, (x, y), king_img)
+
+                    card_image = ImageTk.PhotoImage(img)
+                else:
+                    card_image = None
+
+                if card_image:  # Only configure the label if there's an image
+                    self.card_labels[i][j].config(image=card_image)
+                    self.card_labels[i][j].image = card_image  # Keep a reference
+                else:
+                    self.card_labels[i][j].config(image='')  # Clear the image for empty cells
+
+                position = (i + 1, j + 1)
+                if position in self.highlighted_positions:
+                    self.card_labels[i][j].config(highlightthickness=3, highlightbackground='green')
+                    self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, True))
+
+                self.card_labels[i][j].grid(row=i, column=j, sticky='nswe', padx=5, pady=5)
 
     def show_game_layout(self):
         root = self.game_screen
@@ -153,6 +213,20 @@ class GUIGame:
                     img = Image.open(card_image_path)
                     # Resize the image
                     img = img.resize((80, 120), Image.BOX)
+
+                    if (i + 1, j + 1) in [(self.player1.xPosition, self.player1.yPosition), (self.player2.xPosition, self.player2.yPosition)]:
+                        king_img = self.black_king if (i + 1, j + 1) == (self.player1.xPosition, self.player1.yPosition) else self.red_king
+                        king_width, king_height = king_img.size
+                        x = (80 - king_width) // 2
+                        y = (120 - king_height) // 2
+                        img.paste(king_img, (x, y), king_img)
+
+                    # overlay the king images based on player positions
+                    # if (i, j) == (self.player1.xPosition - 1, self.player1.yPosition - 1):
+                    #     img.paste(self.black_king, (10, 10), self.black_king)
+                    # elif (i, j) == (self.player2.xPosition - 1, self.player2.yPosition - 1):
+                    #     img.paste(self.red_king, (10, 10), self.red_king)
+
                     card_image = ImageTk.PhotoImage(img)
                 else:
                     # You might want to have a default image for empty spaces or a placeholder
@@ -162,6 +236,14 @@ class GUIGame:
                     self.card_labels[i][j].config(image=card_image)
                     self.card_labels[i][j].image = card_image  # Keep a reference
                 self.card_labels[i][j].grid(row=i, column=j, sticky='nswe', padx=5, pady=5)
+
+                position = (i + 1, j + 1)
+                if position in self.highlighted_positions:
+                    self.card_labels[i][j].config(highlightthickness=3, highlightbackground='green')
+                    self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, True))
+                # else:
+                #     self.card_labels[i][j].config(highlightthickness=5, highlightbackground='red')
+                #     self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, False))
 
         # Configure the grid weight
         root.grid_rowconfigure(0, weight=1)
@@ -179,13 +261,17 @@ class GUIGame:
         input_frame = tk.Frame(root)
         input_frame.grid(row=1, column=1, columnspan=7, pady=20)
 
-        label_inputs = ['Label 1', 'Label 2', 'Label 3', 'Label 4']
-        entries = []
-        for idx, label in enumerate(label_inputs):
-            tk.Label(input_frame, text=label).grid(row=0, column=idx, padx=10)
-            entry = tk.Entry(input_frame)
-            entry.grid(row=1, column=idx, padx=10)
-            entries.append(entry)
+    def on_card_click(self, x, y, is_valid):
+        if is_valid:
+            print(f"Clicked on a valid card at position ({x}, {y})")
+            # Perform necessary actions for a valid move
+            # Update player positions, etc.
+            # self.valid_move = (x, y)
+            self.is_valid_move.set((x, y))
+        else:
+            print(f"Clicked on an invalid card at position ({x}, {y})")
+            # Handle invalid move (show message, etc.)
+            gui.messagebox.showinfo("Invalid Move", "The card selected cannot be moved to!")
 
     def handle_player_move(self, player, opponent):
 
@@ -235,7 +321,15 @@ class GUIGame:
             self.display_current_card(player)
             king_move_suggestions = suggest_king_moves(player.xPosition, player.yPosition, opponent.xPosition, opponent.
                                                        yPosition, player.player_number)
-            chosen_move = moves.choose_move_from_suggestions(king_move_suggestions, self.board)
+            
+            # highlight the card positions for the suggested moves
+            self.highlighted_positions = king_move_suggestions
+
+            self.update_card_grid()
+
+            # chosen_move = moves.choose_move_from_suggestions(king_move_suggestions, self.board)
+            chosen_move = self.game_screen.wait_variable(self.is_valid_move)
+
 
             self.valid_move = True
 
@@ -246,6 +340,8 @@ class GUIGame:
                 self.player1.set_position(x, y)
             else:
                 self.player2.set_position(x, y)
+
+            self.update_card_grid()
 
             console_ui.display_valid_move(player.name, chosen_move, self.board)
             console_ui.add_line_break()
@@ -531,29 +627,15 @@ class GUIGame:
             # continue your logic bro
             self.show_game_layout()
 
-        # destroy all the buttons and show the board
-        # play_with_human_button.destroy()
-        # play_with_ai_button.destroy()
-        # game_rules_button.destroy()
-
-        # image_path = self.board.get_card_image(7, 2)
-        # image_path1 = self.board.get_card_image(6, 2)
-        # image_path2 = self.board.get_card_image(6, 3)
-        # print(image_path)
-        # print(image_path1)
-        # print(image_path2)
-
-        # show the window
-
         # # Handle initial moves for both players
-        # console_ui.display_message("{}'s turn for the initial move".format(self.player1.name))
-        # self.handle_initial_move(self.player1, self.player2)
-        #
-        # console_ui.display_message("{}'s turn for the initial move".format(self.player2.name))
-        # self.handle_initial_move(self.player2, self.player1)
-        #
+        console_ui.display_message("{}'s turn for the initial move".format(self.player1.name))
+        self.handle_initial_move(self.player1, self.player2)
+        
+        console_ui.display_message("{}'s turn for the initial move".format(self.player2.name))
+        self.handle_initial_move(self.player2, self.player1)
+        
         # # After initial moves, continue with regular game loop
-        # self.is_first_move = False
+        self.is_first_move = False
         #
         # while not self.game_over:
         #     current_player = self.player1 if self.player1_turn else self.player2
