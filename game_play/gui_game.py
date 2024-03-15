@@ -1,6 +1,7 @@
 import tkinter as tk
 
 from tkinter.font import Font
+from core.classes.game_setup.card import Card
 from core.classes.game_setup.player import Player
 from core.classes.moves import moves
 from core.classes.moves.black_numeral_move import suggest_black_numeral_moves
@@ -9,6 +10,7 @@ from core.classes.moves.king_move import suggest_king_moves
 from core.classes.moves.knight_move import suggest_knight_moves
 from core.classes.moves.red_numeral_move import suggest_red_numeral_moves
 from core.classes.moves.swap import Swap
+from core.enums.card_type import CardType
 from interface.console import console_ui
 from interface.gui import gui
 from PIL import Image, ImageTk
@@ -192,30 +194,32 @@ class GUIGame:
         print("Updating the card grid => hightlighted positions:", self.highlighted_positions)
         card_width, card_height = 80, 120  # Set the dimensions for the card images
 
-        for i in range(7):
-            for j in range(7):
+        for i in range(1, 8):
+            for j in range(1, 8):
+                grid_i = i - 1  # Adjusting for zero-indexed list
+                grid_j = j - 1 
                             # Reset the label configurations and unbind previous events
-                self.card_labels[i][j].config(image='', highlightthickness=0, highlightbackground=None)
-                self.card_labels[i][j].unbind("<Button-1>")
+                self.card_labels[grid_i][grid_j].config(image='', highlightthickness=0, highlightbackground=None)
+                self.card_labels[grid_i][grid_j].unbind("<Button-1>")
 
-                if (i, j) == (0, 6):  # Top left position for red queen
+                if (i, j) == (1, 7):  # Top left position for red queen
                     card_image_path = 'resources/card_images/queen_of_hearts.png'
-                elif (i, j) == (6, 0):  # Bottom left position for black queen
+                elif (i, j) == (7, 1):  # Bottom left position for black queen
                     card_image_path = 'resources/card_images/queen_of_spades.png'
                 else:
-                    card_image_path = self.board.get_card_image(i + 1, j + 1)  # Assuming 1-indexed positions
+                    card_image_path = self.board.get_card_image(grid_i + 1, grid_j + 1)  # Assuming 1-indexed positions
 
                 if card_image_path and card_image_path != "No card at this position":
                     img = Image.open(card_image_path)
                     img = img.resize((card_width, card_height), Image.BOX)
 
-                    if (i + 1, j + 1) == (self.player1.xPosition, self.player1.yPosition):
+                    if (i, j) == (self.player1.xPosition, self.player1.yPosition):
                         king_img = self.black_king
                         king_width, king_height = king_img.size
                         x = (card_width - king_width) // 2
                         y = (card_height - king_height) // 2
                         img.paste(king_img, (x, y), king_img)
-                    elif (i + 1, j + 1) == (self.player2.xPosition, self.player2.yPosition):
+                    elif (i, j) == (self.player2.xPosition, self.player2.yPosition):
                         king_img = self.red_king
                         king_width, king_height = king_img.size
                         x = (card_width - king_width) // 2
@@ -227,21 +231,21 @@ class GUIGame:
                     card_image = None
 
                 if card_image:  # Only configure the label if there's an image
-                    self.card_labels[i][j].config(image=card_image)
-                    self.card_labels[i][j].image = card_image  # Keep a reference
+                    self.card_labels[grid_i][grid_j].config(image=card_image)
+                    self.card_labels[grid_i][grid_j].image = card_image  # Keep a reference
                 else:
-                    self.card_labels[i][j].config(image='')  # Clear the image for empty cells
+                    self.card_labels[grid_i][grid_j].config(image='')  # Clear the image for empty cells
 
-                position = (i + 1, j + 1)
+                position = (i, j)
                 if position in self.highlighted_positions:
-                    king_img = self.black_king if (i + 1, j + 1) == (self.player1.xPosition, self.player1.yPosition) else self.red_king
+                    king_img = self.black_king if (i, j) == (self.player1.xPosition, self.player1.yPosition) else self.red_king
                     color = 'red' if self.player1_turn else 'black'
-                    self.card_labels[i][j].config(highlightthickness=3, highlightbackground=color)
-                    self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, True))
+                    self.card_labels[grid_i][grid_j].config(highlightthickness=3, highlightbackground=color)
+                    self.card_labels[grid_i][grid_j].bind("<Button-1>", lambda e, x=grid_i, y=grid_j: self.on_card_click(x, y, True))
                 else:
-                    self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, False))
+                    self.card_labels[grid_i][grid_j].bind("<Button-1>", lambda e, x=grid_i, y=grid_j: self.on_card_click(x, y, False))
 
-                self.card_labels[i][j].grid(row=i, column=j, sticky='nswe', padx=5, pady=5)
+                self.card_labels[grid_i][grid_j].grid(row=grid_i, column=grid_j, sticky='nswe', padx=5, pady=5)
 
     def show_game_layout(self):
         root = self.game_screen
@@ -265,15 +269,17 @@ class GUIGame:
 
         # Initialize a 7x7 grid of Labels to hold card images
         self.card_labels = [[tk.Label(card_frame) for _ in range(7)] for _ in range(7)]
-        for i in range(7):
-            for j in range(7):
-                if (i, j) == (0, 6):  # Top left position for red queen
+        for i in range(1, 8):
+            for j in range(1, 8):
+                grid_i = i - 1  # Adjusting for zero-indexed list
+                grid_j = j - 1 
+                if (i, j) == (1, 7):  # Top left position for red queen
                     card_image_path = 'resources/card_images/queen_of_hearts.png'
-                elif (i, j) == (6, 0):  # Bottom left position for black queen
+                elif (i, j) == (7, 1):  # Bottom left position for black queen
                     card_image_path = 'resources/card_images/queen_of_spades.png'
                 else:
                 # Get the image for the card at the current position
-                    card_image_path = self.board.get_card_image(i + 1, j + 1)  # Assuming 1-indexed positions
+                    card_image_path = self.board.get_card_image(grid_i + 1, grid_j + 1)  # Assuming 1-indexed positions
 
                 if card_image_path and card_image_path != "No card at this position":
                     # Open the image file
@@ -281,8 +287,8 @@ class GUIGame:
                     # Resize the image
                     img = img.resize((80, 120), Image.BOX)
 
-                    if (i + 1, j + 1) in [(self.player1.xPosition, self.player1.yPosition), (self.player2.xPosition, self.player2.yPosition)]:
-                        king_img = self.black_king if (i + 1, j + 1) == (self.player1.xPosition, self.player1.yPosition) else self.red_king
+                    if (i, j) in [(self.player1.xPosition, self.player1.yPosition), (self.player2.xPosition, self.player2.yPosition)]:
+                        king_img = self.black_king if (i, j) == (self.player1.xPosition, self.player1.yPosition) else self.red_king
                         king_width, king_height = king_img.size
                         x = (80 - king_width) // 2
                         y = (120 - king_height) // 2
@@ -300,23 +306,23 @@ class GUIGame:
                     card_image = None  # Placeholder for an empty image
 
                 if card_image:  # Only configure the label if there's an image
-                    self.card_labels[i][j].config(image=card_image)
-                    self.card_labels[i][j].image = card_image  # Keep a reference
-                self.card_labels[i][j].grid(row=i, column=j, sticky='nswe', padx=5, pady=5)
+                    self.card_labels[grid_i][grid_j].config(image=card_image)
+                    self.card_labels[grid_i][grid_j].image = card_image  # Keep a reference
+                self.card_labels[grid_i][grid_j].grid(row=grid_i, column=grid_j, sticky='nswe', padx=5, pady=5)
 
                 position = (i + 1, j + 1)
                 color = 'red' if self.player1_turn else 'black'
                 if position in self.highlighted_positions:
-                    self.card_labels[i][j].config(highlightthickness=3, highlightbackground=color)
-                    self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, True))
+                    self.card_labels[grid_i][grid_j].config(highlightthickness=3, highlightbackground=color)
+                    self.card_labels[grid_i][grid_j].bind("<Button-1>", lambda e, x=grid_i, y=grid_j: self.on_card_click(x, y, True))
                 else:
-                    self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, False))
+                    self.card_labels[grid_i][grid_j].bind("<Button-1>", lambda e, x=grid_i, y=grid_j: self.on_card_click(x, y, False))
 
         # Configure the grid weight
         root.grid_rowconfigure(0, weight=1)
 
         for i in range(7):
-            root.grid_columnconfigure(i + 1, weight=1)
+            root.grid_columnconfigure(i, weight=1)
             card_frame.grid_rowconfigure(i, weight=1)
             card_frame.grid_columnconfigure(i, weight=1)
 
@@ -338,13 +344,13 @@ class GUIGame:
 
     def on_card_click(self, x, y, is_valid):
         if is_valid:
-            print(f"Clicked on a valid card at position ({x}, {y})")
+            print(f"Clicked on a valid card at position ({x + 1}, {y + 1})")
             # Perform necessary actions for a valid move
             # Update player positions, etc.
             # self.valid_move = (x, y)
             self.is_valid_move.set(f"{x}, {y}")
         else:
-            print(f"Clicked on an invalid card at position ({x}, {y})")
+            print(f"Clicked on an invalid card at position ({x + 1}, {y + 1})")
             # Handle invalid move (show message, etc.)
             gui.messagebox.showinfo("Invalid Move", "The card selected cannot be moved to!")
 
@@ -602,11 +608,11 @@ class GUIGame:
 
             x, y = map(int, self.is_valid_move.get().split(", "))
 
-            joker_x = x
-            joker_y = y
+            joker_x = x + 1
+            joker_y = y + 1
 
             # handle list out of range
-            card = self.card_labels[x][y]
+            card = self.board.get_card_string(joker_x, joker_y)
             print("card at this place is ", card)
 
             if "JOKER" in card:
@@ -635,11 +641,11 @@ class GUIGame:
 
             x, y = map(int, self.is_valid_move.get().split(", "))
 
-            if moves.last_x_swap() == x and moves.last_y_swap() == y:
+            if moves.last_x_swap() == x + 1 and moves.last_y_swap() == y + 1:
                 gui.messagebox.showinfo("Invalid Selection", "Cannot perform swap on the same card again! Please select another card to swap..")
                 valid_move = False
 
-            elif "JOKER" in board.get_card_string(x, y):
+            elif "JOKER" in board.get_card_string(x + 1, y + 1):
                 gui.messagebox.showinfo("Invalid Selection" ,"Cannot perform swap of joker with joker! Please select another card to "
                                            "swap..")
 
@@ -656,17 +662,35 @@ class GUIGame:
                                            "Please select another card to swap..")
                 valid_move = False
 
-            elif moves.check_swap(x, y, joker_x, joker_y):
+            elif moves.check_swap(x + 1, y + 1, joker_x, joker_y):
+                print("Card position is at ", x, y)
+                print("Joker position is at ", joker_x, joker_y)
+
                 # console_ui.display_valid_swap(player.name, (joker_x, joker_y), (x, y), self.board)
-                # board.card_position[joker_x][joker_y], board.card_position[x][y] = (
-                #     board.card_position[x][y], "[ JOKER ]")
+                self.board.card_position[joker_x-1][joker_y-1], board.card_position[x-1][y-1] = (
+                    board.card_position[x-1][y-1], Card(None, None, CardType.JOKER))
                 # console_ui.add_line_break()
                 if self.player1_turn:
                     self.turn_labels[1].config(text="Valid swap!!!")
                 else:
                     self.turn_labels[2].config(text="Valid swap!!!")
-                self.card_labels[joker_x][joker_y], self.card_labels[x][y] = (
-                    self.card_labels[x][y], "[ JOKER ]")
+
+                # Assuming x, y are the positions of the card to swap with the joker card
+                joker_card = self.card_labels[joker_x - 1][joker_y - 1]
+                target_card = self.card_labels[x][y]
+
+                # Swap images
+                joker_image = joker_card.cget('image')
+                target_image = target_card.cget('image')
+
+                print("joker_image:", joker_image)
+                print("target_image:", target_image)
+
+                joker_card.config(image=target_image)
+                target_card.config(image=joker_image)
+                # joker_card = self.card_labels[joker_x][joker_y]
+                # self.card_labels[joker_x][joker_y], self.card_labels[x + 1][y + 1] = (
+                #     self.card_labels[x + 1][y + 1], joker_card)
                 moves.save_swap(joker_x, joker_y)
                 self.highlighted_positions.clear()
                 valid_move = True
