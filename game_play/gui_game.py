@@ -131,10 +131,15 @@ class GUIGame:
         return frame
     
     def update_card_grid(self):
+        print("Updating the card grid => hightlighted positions:", self.highlighted_positions)
         card_width, card_height = 80, 120  # Set the dimensions for the card images
 
         for i in range(7):
             for j in range(7):
+                            # Reset the label configurations and unbind previous events
+                self.card_labels[i][j].config(image='', highlightthickness=0, highlightbackground=None)
+                self.card_labels[i][j].unbind("<Button-1>")
+
                 if (i, j) == (0, 6):  # Top left position for red queen
                     card_image_path = 'resources/card_images/queen_of_hearts.png'
                 elif (i, j) == (6, 0):  # Bottom left position for black queen
@@ -173,6 +178,8 @@ class GUIGame:
                 if position in self.highlighted_positions:
                     self.card_labels[i][j].config(highlightthickness=3, highlightbackground='green')
                     self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, True))
+                else:
+                    self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, False))
 
                 self.card_labels[i][j].grid(row=i, column=j, sticky='nswe', padx=5, pady=5)
 
@@ -241,9 +248,8 @@ class GUIGame:
                 if position in self.highlighted_positions:
                     self.card_labels[i][j].config(highlightthickness=3, highlightbackground='green')
                     self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, True))
-                # else:
-                #     self.card_labels[i][j].config(highlightthickness=5, highlightbackground='red')
-                #     self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, False))
+                else:
+                    self.card_labels[i][j].bind("<Button-1>", lambda e, x=i, y=j: self.on_card_click(x, y, False))
 
         # Configure the grid weight
         root.grid_rowconfigure(0, weight=1)
@@ -267,7 +273,7 @@ class GUIGame:
             # Perform necessary actions for a valid move
             # Update player positions, etc.
             # self.valid_move = (x, y)
-            self.is_valid_move.set((x, y))
+            self.is_valid_move.set(f"{x}, {y}")
         else:
             print(f"Clicked on an invalid card at position ({x}, {y})")
             # Handle invalid move (show message, etc.)
@@ -280,12 +286,12 @@ class GUIGame:
 
         else:
             # console_ui.display_message("\n<Move {}>".format(self.turn))
-            choice = console_ui.turn_choice()
+            # COME choice = console_ui.turn_choice()
 
-            if choice == 1:
-                self.handle_move_card(player, opponent)
-            elif choice == 2:
-                self.handle_swap_card(player, opponent)
+            # if choice == 1:
+            self.handle_move_card(player, opponent)
+            # elif choice == 2:
+                # self.handle_swap_card(player, opponent)
 
     def display_current_card(self, player):
         card_face = self.board.get_card_string(player.xPosition, player.yPosition)
@@ -313,6 +319,29 @@ class GUIGame:
             elif "\u2661" in card or "\u2662" in card:
                 valid_move = self.handle_red_numeral_move(player, opponent)
 
+    def select_move(self, suggested_moves, player):
+        self.highlighted_positions = suggested_moves
+
+        self.update_card_grid()
+
+        # chosen_move = moves.choose_move_from_suggestions(king_move_suggestions, self.board)
+        self.game_screen.wait_variable(self.is_valid_move)
+
+        x, y = map(int, self.is_valid_move.get().split(", "))
+
+
+        self.valid_move = True
+
+        self.highlighted_positions.clear()
+
+        if player.player_number == 1:
+            self.player1.set_position(x + 1, y + 1)
+        else:
+            self.player2.set_position(x + 1, y + 1)
+
+
+        self.update_card_grid()
+
     def handle_initial_move(self, player, opponent):
         self.valid_move = False
 
@@ -323,115 +352,63 @@ class GUIGame:
                                                        yPosition, player.player_number)
             
             # highlight the card positions for the suggested moves
-            self.highlighted_positions = king_move_suggestions
+            self.select_move(king_move_suggestions, player)
 
-            self.update_card_grid()
+            # console_ui.display_valid_move(player.name, self.chosen_move, self.board)
+            # console_ui.add_line_break()
 
-            # chosen_move = moves.choose_move_from_suggestions(king_move_suggestions, self.board)
-            chosen_move = self.game_screen.wait_variable(self.is_valid_move)
-
-
-            self.valid_move = True
-
-            x = chosen_move[0]
-            y = chosen_move[1]
-
-            if player.player_number == 1:
-                self.player1.set_position(x, y)
-            else:
-                self.player2.set_position(x, y)
-
-            self.update_card_grid()
-
-            console_ui.display_valid_move(player.name, chosen_move, self.board)
-            console_ui.add_line_break()
-
-        self.board.display_board(player.xPosition, player.yPosition, opponent.xPosition, opponent.yPosition)
+        # self.board.display_board(player.xPosition, player.yPosition, opponent.xPosition, opponent.yPosition)
         self.turn += 1
 
     def handle_joker_move(self, player, opponent):
         joker_suggestions = get_possible_moves_to_joker(player.xPosition, player.yPosition, self.board)
 
-        chosen_move = moves.choose_move_from_suggestions(joker_suggestions, self.board)
+        # chosen_move = moves.choose_move_from_suggestions(joker_suggestions, self.board)
 
-        x = chosen_move[0]
-        y = chosen_move[1]
+        self.highlighted_positions = joker_suggestions
+
+        self.update_card_grid()
+
+        # chosen_move = moves.choose_move_from_suggestions(king_move_suggestions, self.board)
+        self.game_screen.wait_variable(self.is_valid_move)
+
+        x, y = map(int, self.is_valid_move.get().split(", "))
 
         if not moves.check_move(x, y, opponent.xPosition, opponent.yPosition, player.player_number):
-            console_ui.display_message("Invalid move, try again!")
+            gui.messagebox.showinfo("Invalid Move", "The card selected cannot be moved to, try again!")
             return False
         elif moves.joker_move(player.xPosition, player.yPosition, x, y):
             if player.player_number == 1:
                 self.player1.set_position(x, y)
             else:
                 self.player2.set_position(x, y)
-            console_ui.display_valid_move(player.name, (x, y), self.board)
+            # console_ui.display_valid_move(player.name, (x, y), self.board)
             # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
             #                                                                              player.xPosition,
             #                                                                              player.yPosition))
-            console_ui.add_line_break()
+            # console_ui.add_line_break()
             return True
         else:
-            console_ui.display_message("Invalid move, try again!")
+            # console_ui.display_message("Invalid move, try again!")
+            gui.messagebox.showinfo("Invalid Move", "The card selected cannot be moved to!")
             return False
 
     def handle_king_move(self, player, opponent):
         king_move_suggestions = suggest_king_moves(player.xPosition, player.yPosition, opponent.xPosition, opponent.
                                                    yPosition, player.player_number)
-        chosen_move = moves.choose_move_from_suggestions(king_move_suggestions, self.board)
+        # chosen_move = moves.choose_move_from_suggestions(king_move_suggestions, self.board)
 
-        console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+        self.select_move(king_move_suggestions, player)
 
-        x = chosen_move[0]
-        y = chosen_move[1]
-        if not moves.check_move(x, y, opponent.xPosition, opponent.yPosition, player.player_number):
-            console_ui.display_message("Invalid move, try again!")
-            return False
+        return True
 
-        elif moves.king_move(player.xPosition, player.yPosition, x, y):
-            if player.player_number == 1:
-                self.player1.set_position(x, y)
-            else:
-                self.player2.set_position(x, y)
-            # console_ui.display_message('Valid Move!')
-            # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
-            #                                                                              player.xPosition,
-            #                                                                              player.yPosition))
-            # console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
-            console_ui.display_valid_move(player.name, chosen_move, self.board)
-            console_ui.add_line_break()
-            return True
-        else:
-            console_ui.display_message("Invalid move, try again!")
-            return False
 
     def handle_knight_move(self, player, opponent):
         knight_move_suggestions = suggest_knight_moves(player, opponent)
 
-        chosen_move = moves.choose_move_from_suggestions(knight_move_suggestions, self.board)
-        x = chosen_move[0]
-        y = chosen_move[1]
+        self.select_move(knight_move_suggestions, player)
 
-        if not moves.check_move(x, y, opponent.xPosition, opponent.yPosition, player.player_number):
-            print("Invalid move, try again!")
-            return False
-        elif moves.knight_move(player.xPosition, player.yPosition, x, y):
-            if player.player_number == 1:
-                self.player1.set_position(x, y)
-            else:
-                self.player2.set_position(x, y)
-                # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
-                #                                                                              player.xPosition,
-                #                                                                              player.yPosition))
-                # console_ui.display_message('Valid Move!')
-                # console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
-                console_ui.display_valid_move(player.name, chosen_move, self.board)
-
-                console_ui.add_line_break()
-            return True
-        else:
-            console_ui.display_message("Invalid move, try again!")
-            return False
+        return True
 
     def handle_black_numeral_move(self, player, opponent):
         board = self.board
@@ -440,32 +417,35 @@ class GUIGame:
         move_count = int(card_face[1:3].strip())
 
         black_numeral_move_suggestions = suggest_black_numeral_moves(player, move_count, opponent)
-        chosen_move = moves.choose_move_from_suggestions(black_numeral_move_suggestions, self.board)
+        # chosen_move = moves.choose_move_from_suggestions(black_numeral_move_suggestions, self.board)
 
-        y = chosen_move[1]
+        self.select_move(black_numeral_move_suggestions, player)
 
-        if not moves.check_move(player.xPosition, y, opponent.xPosition,
-                                opponent.yPosition, 1):
-            console_ui.display_message("Invalid move, try again!")
-            return False
-        else:
-            if y == 0:
-                console_ui.display_message("Invalid move, try again!")
-                return False
-            else:
-                if player.player_number == 1:
-                    self.player1.set_position(player.xPosition, y)
-                else:
-                    self.player2.set_position(player.xPosition, y)
-                # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
-                #                                                                              player.xPosition,
-                #                                                                              player.yPosition))
-                # console_ui.display_message('Valid Move!')
-                # console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
-                console_ui.display_valid_move(player.name, chosen_move, self.board)
+        # y = chosen_move[1]
 
-                console_ui.add_line_break()
-                return True
+        # if not moves.check_move(player.xPosition, y, opponent.xPosition,
+        #                         opponent.yPosition, 1):
+        #     console_ui.display_message("Invalid move, try again!")
+        #     return False
+        # else:
+        #     if y == 0:
+        #         console_ui.display_message("Invalid move, try again!")
+        #         return False
+        #     else:
+        #         if player.player_number == 1:
+        #             self.player1.set_position(player.xPosition, y)
+        #         else:
+        #             self.player2.set_position(player.xPosition, y)
+        #         # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
+        #         #                                                                              player.xPosition,
+        #         #                                                                              player.yPosition))
+        #         # console_ui.display_message('Valid Move!')
+        #         # console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+        #         console_ui.display_valid_move(player.name, chosen_move, self.board)
+
+        #         console_ui.add_line_break()
+        #         return True
+        return True
 
     def handle_red_numeral_move(self, player, opponent):
         board = self.board
@@ -473,32 +453,34 @@ class GUIGame:
         move_count = int(card_face[1:3].strip())
 
         red_numeral_move_suggestions = suggest_red_numeral_moves(player, move_count, opponent)
-        chosen_move = moves.choose_move_from_suggestions(red_numeral_move_suggestions, self.board)
+        # chosen_move = moves.choose_move_from_suggestions(red_numeral_move_suggestions, self.board)
+        self.select_move(red_numeral_move_suggestions, player)
 
-        x = chosen_move[0]
+        # x = chosen_move[0]
 
-        if not moves.check_move(x, player.yPosition, opponent.xPosition,
-                                opponent.yPosition, 1):
-            console_ui.display_message("Invalid move, try again!")
-            return False
-        else:
-            if x == 0:
-                console_ui.display_message("Invalid move, try again!")
-                return False
-            else:
-                if player.player_number == 1:
-                    self.player1.set_position(x, player.yPosition)
-                else:
-                    self.player2.set_position(x, player.yPosition)
-                # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
-                #                                                                              player.xPosition,
-                #                                                                              player.yPosition))
-                # console_ui.display_message('Valid Move!')
-                # console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
-                console_ui.display_valid_move(player.name, chosen_move, self.board)
+        # if not moves.check_move(x, player.yPosition, opponent.xPosition,
+        #                         opponent.yPosition, 1):
+        #     console_ui.display_message("Invalid move, try again!")
+        #     return False
+        # else:
+        #     if x == 0:
+        #         console_ui.display_message("Invalid move, try again!")
+        #         return False
+        #     else:
+        #         if player.player_number == 1:
+        #             self.player1.set_position(x, player.yPosition)
+        #         else:
+        #             self.player2.set_position(x, player.yPosition)
+        #         # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
+        #         #                                                                              player.xPosition,
+        #         #                                                                              player.yPosition))
+        #         # console_ui.display_message('Valid Move!')
+        #         # console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
+        #         console_ui.display_valid_move(player.name, chosen_move, self.board)
 
-                console_ui.add_line_break()
-                return True
+        #         console_ui.add_line_break()
+        #         return True
+        return True
 
     def handle_swap_card(self, player, opponent):
         board = self.board
@@ -605,7 +587,7 @@ class GUIGame:
         print('WITHOUT CLOSING HERE')
 
         # continue the game play here
-        self.play_game()
+        #UNCOM self.play_game()
 
     @staticmethod
     def play_with_ai():
@@ -613,19 +595,22 @@ class GUIGame:
 
     def play_game(self):
 
-        if not self.passed_welcome:
-            print('hello')
-            print(self.board)
+        # uncomeif not self.passed_welcome:
+        #     print('hello')
+        #     print(self.board)
 
-            # get names from the players
-            self.request_players_info()
+        #     # get names from the players
+        #     self.request_players_info()
 
-            print('IS IT HETTIGN HERE BEFORE THERE')
-        else:
-            print('WHAT NEXT HERE')
+        #     print('IS IT HETTIGN HERE BEFORE THERE')
+        # else:
+        # uncome    print('WHAT NEXT HERE')
 
             # continue your logic bro
-            self.show_game_layout()
+        self.show_game_screen()
+        self.player1 = Player("Carl (Player 1)", 1)
+        self.player2 = Player("Jake (Player 2)", 2)
+        self.show_game_layout()
 
         # # Handle initial moves for both players
         console_ui.display_message("{}'s turn for the initial move".format(self.player1.name))
@@ -636,30 +621,30 @@ class GUIGame:
         
         # # After initial moves, continue with regular game loop
         self.is_first_move = False
-        #
-        # while not self.game_over:
-        #     current_player = self.player1 if self.player1_turn else self.player2
-        #     opponent = self.player2 if self.player1_turn else self.player1
-        #
-        #     console_ui.add_line_break()
-        #
-        #     console_ui.display_message("{}'s turn".format(current_player.name))
-        #     self.display_current_card(current_player)
-        #     console_ui.add_line_break()
-        #
-        #     self.handle_player_move(current_player, opponent)
-        #
-        #     if moves.check_winning_move(current_player.xPosition, current_player.yPosition):
-        #         self.game_over = True
-        #         console_ui.display_message('')
-        #         console_ui.add_line_break()
-        #         console_ui.display_message("{} wins!".format(current_player.name))
-        #         console_ui.add_line_break()
-        #
-        #     self.player1_turn = not self.player1_turn
-        #     self.board.display_board(self.player1.xPosition, self.player1.yPosition, self.player2.xPosition,
-        #                              self.player2.yPosition)
-        #
-        #     # if not self.player1_turn:  # This means Player 2 just completed their turn
-        #     self.turn += 1
-        # console_ui.display_message('===== Game Ended =====')
+        
+        while not self.game_over:
+            current_player = self.player1 if self.player1_turn else self.player2
+            opponent = self.player2 if self.player1_turn else self.player1
+        
+            # console_ui.add_line_break()
+        
+            # console_ui.display_message("{}'s turn".format(current_player.name))
+            self.display_current_card(current_player)
+            # console_ui.add_line_break()
+        
+            self.handle_player_move(current_player, opponent)
+        
+            if moves.check_winning_move(current_player.xPosition, current_player.yPosition):
+                self.game_over = True
+                console_ui.display_message('')
+                console_ui.add_line_break()
+                console_ui.display_message("{} wins!".format(current_player.name))
+                console_ui.add_line_break()
+        
+            self.player1_turn = not self.player1_turn
+            self.board.display_board(self.player1.xPosition, self.player1.yPosition, self.player2.xPosition,
+                                     self.player2.yPosition)
+        
+            # if not self.player1_turn:  # This means Player 2 just completed their turn
+            self.turn += 1
+        console_ui.display_message('===== Game Ended =====')
