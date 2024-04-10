@@ -836,6 +836,8 @@ class GUIGame:
         if moves.check_winning_move(current_player.xPosition, current_player.yPosition):
             self.game_over = True
             # Update UI to show the winning message
+            gui.messagebox.showinfo("WINNER FOUND!!!", f"{current_player.name} wins the game!")
+
 
         if not self.game_over:
             # Switch turns
