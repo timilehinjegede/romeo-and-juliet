@@ -388,7 +388,7 @@ class GUIGame:
                     king_img = self.black_king if (i, j) == (
                     self.player1.xPosition, self.player1.yPosition) else self.red_king
                     color = 'red' if self.player1_turn else 'black'
-                    self.card_labels[grid_i][grid_j].config(highlightthickness=3, highlightbackground=color)
+                    self.card_labels[grid_i][grid_j].config(highlightthickness=5, highlightbackground=color)
                     self.card_labels[grid_i][grid_j].bind("<Button-1>",
                                                           lambda e, x=grid_i, y=grid_j: self.on_card_click(x, y, True))
                 else:
@@ -400,7 +400,7 @@ class GUIGame:
     def show_game_layout(self):
         root = self.game_screen
 
-        main_frame = tk.Frame(root, bg="#00A550")
+        main_frame = tk.Frame(root, bg="white")
         main_frame.pack(fill="both", expand=True)
 
         # Section 1 - Player 1
@@ -462,7 +462,7 @@ class GUIGame:
                 position = (i + 1, j + 1)
                 color = 'red' if self.player1_turn else 'black'
                 if position in self.highlighted_positions:
-                    self.card_labels[grid_i][grid_j].config(highlightthickness=3, highlightbackground=color)
+                    self.card_labels[grid_i][grid_j].config(highlightthickness=5, highlightbackground=color)
                     self.card_labels[grid_i][grid_j].bind("<Button-1>",
                                                           lambda e, x=grid_i, y=grid_j: self.on_card_click(x, y, True))
                 else:
