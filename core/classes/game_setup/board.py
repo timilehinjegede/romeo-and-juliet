@@ -143,7 +143,7 @@ class Board:
     #         return "No card at this position"
 
     def get_card_image(self, x, y):
-    # Get the card object at the specified position
+        # Get the card object at the specified position
         card_obj = self.card_position[x][y]
         if card_obj:
             # Extract the face and suit of the card
@@ -152,7 +152,7 @@ class Board:
 
             #   Determine the file name based on the card object attributes
             if card_obj.card_type == CardType.JOKER:
-            # Assuming 'red_joker.png' or 'black_joker.png' for the joker cards
+                # Assuming 'red_joker.png' or 'black_joker.png' for the joker cards
                 color = 'red' if card_suit in [CardSuit.HEARTS, CardSuit.DIAMONDS] else 'black'
                 card_name = f"{color}_joker.png"
             elif card_face == CardFace.KING:

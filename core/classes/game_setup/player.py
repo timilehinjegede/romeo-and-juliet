@@ -4,6 +4,7 @@ class Player:
         self.player_number = player_number
         # Initialize an empty list for storing the player's moves
         self.moves = []
+        self.currentScore = 0
 
         # Set initial positions based on player number
         if player_number == 1:

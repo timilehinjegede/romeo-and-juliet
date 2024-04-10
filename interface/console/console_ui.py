@@ -53,6 +53,6 @@ def display_valid_swap(player_name, joker_position, card_position, board):
     card_string = board.get_card_string(card_position[0], card_position[1])
     display_message('Valid Swap!')
     display_message('{} chose to swap a [ Joker ] at position {} with card {} at position {}'.format(player_name,
-                                                                                                 joker_position,
-                                                                                                 card_string,
-                                                                                                 card_position))
+                                                                                                     joker_position,
+                                                                                                     card_string,
+                                                                                                     card_position))
