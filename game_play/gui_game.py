@@ -234,18 +234,22 @@ class GUIGame:
 
     # Define the player sections
     def create_player_section(self, parent, player_name, nomination, player_number, score):
-        frame = tk.Frame(parent)
+        frame = tk.Frame(parent, bg="#00A550")
 
         # Define a larger font
         large_font = Font(size=12)  # Adjust the size as needed
 
+        # Spacer at the bottom to push everything to the middle
+        bottom_spacer = tk.Frame(frame, height=1, bg="#00A550")
+        bottom_spacer.pack(fill='both', expand=True)
+
         # Player number label
-        name_label = tk.Label(frame, text='Player {}'.format(player_number), anchor='center', padx=10, pady=10)
+        name_label = tk.Label(frame, text='Player {}'.format(player_number), anchor='center', padx=10, pady=10, bg='#00A550', fg='white')
         name_label['font'] = large_font
         name_label.pack(fill='both', pady=15)
 
         # Player name label 
-        name_label = tk.Label(frame, text='Player Name: ', anchor='center', padx=10)
+        name_label = tk.Label(frame, text='Player Name: ', anchor='center', padx=10, bg='#00A550', fg='white')
         name_label['font'] = Font(size=10)
         name_label.pack(fill='both')
         name_label = tk.Label(frame, text=player_name, anchor='center', padx=10, pady=10)
@@ -253,16 +257,16 @@ class GUIGame:
         name_label.pack(fill='both')
 
         # Score label
-        score_label = tk.Label(frame, text='Current Score: {}'.format(score), anchor='center', padx=10, pady=10)
+        score_label = tk.Label(frame, text='Current Score: {}'.format(score), anchor='center', padx=10, pady=10, bg='#00A550', fg='white')
         score_label['font'] = large_font
         score_label.pack(fill='both')
 
         # Nomination label
-        nomination_label = tk.Label(frame, text=nomination, anchor='center', padx=10, pady=10)
+        nomination_label = tk.Label(frame, text=nomination, anchor='center', padx=10, pady=10, bg='#00A550', fg='white')
         nomination_label['font'] = large_font
         nomination_label.pack(fill='both')
 
-        turn_label = tk.Label(frame, text="", anchor='center', padx=0, pady=0, fg='red', width=20, wraplength=150)
+        turn_label = tk.Label(frame, text="", anchor='center', padx=0, pady=0, width=20, wraplength=150, bg='#00A550', fg='white')
         turn_label['font'] = Font(size=8)
         turn_label.pack(fill='both')
         self.turn_labels[player_number] = turn_label
@@ -306,6 +310,10 @@ class GUIGame:
             self.player2_move_button = move_button
             self.player2_swap_button = swap_button
 
+        # Spacer at the bottom to push everything to the middle
+        bottom_spacer = tk.Frame(frame, height=1, bg="#00A550")
+        bottom_spacer.pack(fill='both', expand=True)
+
         return frame
 
     def display_label(self):
@@ -331,7 +339,7 @@ class GUIGame:
 
     def update_card_grid(self):
         print("Updating the card grid => hightlighted positions:", self.highlighted_positions)
-        card_width, card_height = 80, 120  # Set the dimensions for the card images
+        card_width, card_height = 110, 125  # Set the dimensions for the card images
 
         for i in range(1, 8):
             for j in range(1, 8):
@@ -392,24 +400,27 @@ class GUIGame:
     def show_game_layout(self):
         root = self.game_screen
 
+        main_frame = tk.Frame(root, bg="#00A550")
+        main_frame.pack(fill="both", expand=True)
+
         # Section 1 - Player 1
-        player1_frame = self.create_player_section(root, self.player1.name, "RED PLAYER", 1, self.player1.currentScore)
-        player1_frame.grid(row=0, column=0, sticky='nswe')
+        player1_frame = self.create_player_section(main_frame, self.player1.name, "RED PLAYER", 1, self.player1.currentScore)
+        player1_frame.pack(side="left", fill="both", expand=True, anchor="center")
 
+        # Section 2 - Card Grid (7x7)
+        # Section 2 - Card Grid (7x7)
+        # Initialize a 7x7 grid of Labels to hold card images
+        card_frame = tk.Frame(main_frame, bg="#00A550")
+        card_frame.pack(side="left", fill="both", expand=True, anchor="center")
+        
         # Section 3 - Player 2
-        player2_frame = self.create_player_section(root, self.player2.name, "BLACK PLAYER", 2, self.player2.currentScore)
-        player2_frame.grid(row=0, column=8, sticky='nswe')
+        player2_frame = self.create_player_section(main_frame, self.player2.name, "BLACK PLAYER", 2, self.player2.currentScore)
+        player2_frame.pack(side="left", fill="both", expand=True, anchor="center")
 
-        # Section 2 - Card Grid (7x7)
-        # Section 2 - Card Grid (7x7)
-        # Initialize a 7x7 grid of Labels to hold card images
-        card_frame = tk.Frame(root)
-        card_frame.grid(row=0, column=1, columnspan=7, sticky='nswe')
+        card_width = 110
+        card_height = 125
 
-        card_width = root.winfo_width() // 9  # Assuming there are 9 columns in the grid
-        card_height = root.winfo_height() // 8  # Assuming there are 8 rows in the grid
-
-        # Initialize a 7x7 grid of Labels to hold card images
+                # Initialize a 7x7 grid of Labels to hold card images
         self.card_labels = [[tk.Label(card_frame) for _ in range(7)] for _ in range(7)]
         for i in range(1, 8):
             for j in range(1, 8):
@@ -427,15 +438,15 @@ class GUIGame:
                     # Open the image file
                     img = Image.open(card_image_path)
                     # Resize the image
-                    img = img.resize((80, 120), Image.BOX)
+                    img = img.resize((card_width, card_height), Image.BOX)
 
                     if (i, j) in [(self.player1.xPosition, self.player1.yPosition),
                                   (self.player2.xPosition, self.player2.yPosition)]:
                         king_img = self.black_king if (i, j) == (
                         self.player1.xPosition, self.player1.yPosition) else self.red_king
                         king_width, king_height = king_img.size
-                        x = (80 - king_width) // 2
-                        y = (120 - king_height) // 2
+                        x = (card_width - king_width) // 2
+                        y = (card_height - king_height) // 2
                         img.paste(king_img, (x, y), king_img)
 
                     card_image = ImageTk.PhotoImage(img)
@@ -446,7 +457,7 @@ class GUIGame:
                 if card_image:  # Only configure the label if there's an image
                     self.card_labels[grid_i][grid_j].config(image=card_image)
                     self.card_labels[grid_i][grid_j].image = card_image  # Keep a reference
-                self.card_labels[grid_i][grid_j].grid(row=grid_i, column=grid_j, sticky='nswe', padx=5, pady=5)
+                self.card_labels[grid_i][grid_j].grid(row=grid_i, column=grid_j, sticky='nswe')
 
                 position = (i + 1, j + 1)
                 color = 'red' if self.player1_turn else 'black'
@@ -457,18 +468,17 @@ class GUIGame:
                 else:
                     self.card_labels[grid_i][grid_j].bind("<Button-1>",
                                                           lambda e, x=grid_i, y=grid_j: self.on_card_click(x, y, False))
-
         # Configure the grid weight
-        root.grid_rowconfigure(0, weight=1)
+      #  root.grid_rowconfigure(0, weight=1)
 
-        for i in range(7):
-            root.grid_columnconfigure(i, weight=1)
-            card_frame.grid_rowconfigure(i, weight=1)
-            card_frame.grid_columnconfigure(i, weight=1)
+       # for i in range(7):
+         #   root.grid_columnconfigure(i, weight=1)
+          #  card_frame.grid_rowconfigure(i, weight=1)
+            #card_frame.grid_columnconfigure(i, weight=1)
 
         # Player sections weight configuration
-        root.grid_columnconfigure(0, weight=1)
-        root.grid_columnconfigure(8, weight=1)
+     #   root.grid_columnconfigure(0, weight=1)
+        #root.grid_columnconfigure(8, weight=1)
 
     def move_card(self):
         current_player = self.player1 if self.player1_turn else self.player2
@@ -841,7 +851,7 @@ class GUIGame:
         root = self.game_screen
         root.title("Welcome to Romeo and Juliet Game")
 
-        gui.center_window(root, 1400, 1000)
+        gui.center_window(root, 1300, 1000)
 
         root.deiconify()
 
