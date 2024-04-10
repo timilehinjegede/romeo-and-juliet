@@ -1,5 +1,6 @@
 import tkinter as tk
 
+from tkinter import ttk
 from tkinter.font import Font
 from core.classes.game_setup.board import Board
 from core.classes.game_setup.card import Card
@@ -60,10 +61,13 @@ class GUIGame:
         self.is_valid_move = tk.StringVar()
 
         self.turn_labels = {}  # Dictionary to store turn labels for each player
-        self.player1_timer_seconds = 600  # For example, 10 minutes per player
-        self.player2_timer_seconds = 600
+        self.player1_timer_seconds = 0  # For example, 10 minutes per player
+        self.player2_timer_seconds = 0
         self.timer_labels = {}
         self.timer_task_id = None
+
+        self.timer_enabled = False
+        self.hints_enabled = False
 
     def start_timer(self):
         self.update_timer()
@@ -164,23 +168,46 @@ class GUIGame:
         intro_window = tk.Toplevel()
         intro_window.title("Romeo and Juliet Game")
 
+        # Set window background color
+        intro_window.configure(bg='#00A550')
+
         gui.center_window(intro_window, 900, 900)
 
-        play_with_human_button = tk.Button(intro_window, text="Play with Human",
-                                           command=lambda: self.play_with_human(intro_window))
-        play_with_ai_button = tk.Button(intro_window, text="Play with Computer", command=self.play_with_ai)
-        game_rules_button = tk.Button(intro_window, text="Game Rules", command=gui.show_game_rules)
+        text_widget = tk.Label(intro_window, text="WELCOME TO", bg='#00A550', fg='white', font=Font(size=17, weight='bold'))
+        text_widget.pack(padx=10, pady=60)
 
-        play_with_human_button.pack()
-        play_with_ai_button.pack()
-        game_rules_button.pack()
+        image_path = "resources/romeo_logo.png"
+        img = Image.open(image_path)
+        desired_width = 800
+        desired_height = 300
+        img = img.resize((desired_width, desired_height))
+
+        img_tk = ImageTk.PhotoImage(img)
+        label = tk.Label(intro_window, image=img_tk)
+        label.configure(bg='#00A550')
+        label.pack()
+
+        # Define a custom style for the buttons
+        # Style configuration
+        style = ttk.Style(intro_window)
+        style.configure('TButton', background='white', foreground='#00A550', font=('Arial', 12, 'bold'), borderwidth=0)
+        style.map('TButton', foreground=[('active', 'green')], background=[('active', 'white')])
+
+        play_with_human_button = ttk.Button(intro_window, text="Play with Human",
+                                           command=lambda: self.play_with_human(intro_window), style="TButton", width=30, padding=10)
+        play_with_ai_button = ttk.Button(intro_window, text="Play with Computer", command=self.play_with_ai, style="TButton", width=30, padding=10)
+        game_rules_button = ttk.Button(intro_window, text="Game Rules", command=gui.show_game_rules, style="TButton", width=30, padding=10)
+
+        play_with_human_button.pack(pady=10)
+        play_with_ai_button.pack(pady=10)
+        game_rules_button.pack(pady=10)
 
         intro_window.mainloop()
 
-        self.player1_move_button
-        self.player1_swap_button
-        self.player2_move_button
-        self.player2_swap_button
+        # self.player1_move_button
+        # self.player1_swap_button
+        # self.player2_move_button
+        # self.player2_swap_button
 
 
     def update_button_visibility(self):
@@ -253,13 +280,15 @@ class GUIGame:
         restart_button = tk.Button(frame, text="Restart Game", command=self.reset_game)
         restart_button.pack(pady=10)
 
-        # Calculate minutes and seconds from total seconds for initial display
-        total_seconds = getattr(self, f'player{player_number}_timer_seconds')
-        minutes, seconds = divmod(total_seconds, 60)
+        if self.timer_enabled:
 
-        timer_label = tk.Label(frame, text=f"Time left: {minutes:02d}:{seconds:02d}")
-        timer_label.pack()
-        self.timer_labels[f'player{player_number}'] = timer_label
+            # Calculate minutes and seconds from total seconds for initial display
+            total_seconds = getattr(self, f'player{player_number}_timer_seconds')
+            minutes, seconds = divmod(total_seconds, 60)
+
+            timer_label = tk.Label(frame, text=f"Time left: {minutes:02d}:{seconds:02d}")
+            timer_label.pack()
+            self.timer_labels[f'player{player_number}'] = timer_label
 
 
         # Store references to the buttons
@@ -525,9 +554,11 @@ class GUIGame:
             self.select_move(king_move_suggestions, player)
 
         if self.is_first_move:
-            self.pause_timer()
+            if self.timer_enabled:
+                self.pause_timer()
             self.player1_turn = not self.player1_turn
-            self.resume_timer()
+            if self.timer_enabled:
+                self.resume_timer()
         print("Initial move completed")
         print("player 1 turn is now:", self.player1_turn)
         self.display_label()
@@ -726,11 +757,71 @@ class GUIGame:
         self.player1 = Player(player1_name, 1)
         self.player2 = Player(player2_name, 2)
 
-        intro_window.destroy()
 
         self.passed_welcome = True
 
-        self.show_game_screen()
+        # ask for the details here (show hints and game timer)
+
+        # self.show_game_screen()
+        def on_game_options_selected(timer_enabled, hints_enabled, timer_minutes):
+            print(f"Timer Enabled: {timer_enabled}")
+            self.timer_enabled = timer_enabled
+            print(f"Hints Enabled: {hints_enabled}")
+            self.hints_enabled = hints_enabled
+            print(f"Timer Minutes: {timer_minutes}")
+            self.player1_timer_seconds = int(timer_minutes) * 60
+            self.player2_timer_seconds = int(timer_minutes) * 60
+            # Now you can set up the game with these options
+            # self.start_game_with_options(timer_enabled, hints_enabled, timer_minutes)
+            intro_window.destroy()
+        
+            self.show_game_screen()
+
+        self.ask_game_options(intro_window, on_game_options_selected)
+
+    def ask_game_options(self, parent_window, callback):
+        options_window = tk.Toplevel(parent_window)
+        options_window.title("Game Options")
+        gui.center_window(options_window, 300, 200)  # Adjust size as needed
+
+        timer_var = tk.BooleanVar(value=False)
+        hints_var = tk.BooleanVar(value=False)
+
+        # Label and Checkbutton for timer
+        timer_label = tk.Label(options_window, text="Enable Timer?")
+        timer_label.pack()
+        timer_checkbutton = tk.Checkbutton(options_window, text="Yes", variable=timer_var, command=lambda: self.toggle_timer_entry(timer_entry, timer_label_minutes, timer_var))
+        timer_checkbutton.pack()
+
+        # Label and Entry for timer minutes; initially not visible
+        timer_label_minutes = tk.Label(options_window, text="Timer in minutes")
+        timer_entry = tk.Entry(options_window)
+
+        # Label and Checkbutton for hints
+        hints_label = tk.Label(options_window, text="Enable Hints?")
+        hints_label.pack()
+        hints_checkbutton = tk.Checkbutton(options_window, text="Yes", variable=hints_var)
+        hints_checkbutton.pack()
+
+        def on_confirm():
+            timer_enabled = timer_var.get()
+            hints_enabled = hints_var.get()
+            timer_minutes = timer_entry.get() if timer_enabled else "0"
+            callback(timer_enabled, hints_enabled, timer_minutes)
+            options_window.destroy()
+
+        confirm_button = tk.Button(options_window, text="Confirm", command=on_confirm)
+        confirm_button.pack()
+
+    def toggle_timer_entry(self, timer_entry, timer_label, timer_var):
+        if timer_var.get():
+            # Show timer entry and label if timer is enabled
+            timer_label.pack()
+            timer_entry.pack()
+        else:
+            # Hide timer entry and label if timer is not enabled
+            timer_label.pack_forget()
+            timer_entry.pack_forget()
 
     def show_game_screen(self):
 
@@ -758,7 +849,8 @@ class GUIGame:
         else:
             self.show_game_layout()
 
-            self.update_timer()
+            if self.timer_enabled: 
+                self.update_timer()
 
             # Handle initial moves for both players
             self.display_label()
@@ -779,9 +871,11 @@ class GUIGame:
         self.game_screen.mainloop()
 
     def on_make_move(self, player_number):
-        self.pause_timer()
+        if self.timer_enabled:
+            self.pause_timer()
         self.player1_turn = not self.player1_turn
-        self.resume_timer()
+        if self.timer_enabled:
+            self.resume_timer()
         self.update_button_visibility()
         self.update_card_grid()
 
