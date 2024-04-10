@@ -168,7 +168,7 @@ class GUIGame:
 
         play_with_human_button = tk.Button(intro_window, text="Play with Human",
                                            command=lambda: self.play_with_human(intro_window))
-        play_with_ai_button = tk.Button(intro_window, text="Play with AI", command=self.play_with_ai)
+        play_with_ai_button = tk.Button(intro_window, text="Play with Computer", command=self.play_with_ai)
         game_rules_button = tk.Button(intro_window, text="Game Rules", command=gui.show_game_rules)
 
         play_with_human_button.pack()
