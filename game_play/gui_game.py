@@ -90,7 +90,7 @@ class GUIGame:
         
             # Update the timer display for the current player with minutes and seconds
             player_number = "player1" if self.player1_turn else "player2"
-            self.timer_labels[player_number].config(text=f"Time left: {minutes:02d}:{seconds:02d}")
+            self.timer_labels[player_number].config(text=f"Time left: {minutes:02d}:{seconds:02d}", font=Font(size=12, weight='bold'))
         
             # Schedule this method to be called again after 1 second, and save the task ID
             self.timer_task_id = self.game_screen.after(1000, self.update_timer)
