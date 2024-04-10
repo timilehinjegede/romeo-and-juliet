@@ -44,10 +44,10 @@ def check_move(x, y, opponent_player_x, opponent_player_y, player_number):
         return False
     elif player_number == 1:
         # Check if the move is within bounds for player 1
-        return x != 1 or y != 7
+        return x != 7 or y != 1
     elif player_number == 2:
         # Check if the move is within bounds for player 2
-        return x != 7 or y != 1
+        return x != 1 or y != 7
     else:
         # Move is valid for other player numbers
         return True
@@ -55,7 +55,7 @@ def check_move(x, y, opponent_player_x, opponent_player_y, player_number):
 
 def check_winning_move(x_position, y_position):
     # Check if the move results in a winning condition
-    if (x_position == 7 and y_position == 1) or (x_position == 1 and y_position == 7):
+    if (x_position == 1 and y_position == 7) or (x_position == 7 and y_position == 1):
         # Winning condition met
         return True
     else:
