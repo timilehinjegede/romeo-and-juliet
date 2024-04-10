@@ -1,7 +1,9 @@
 import tkinter as tk
 
 from tkinter.font import Font
+from core.classes.game_setup.board import Board
 from core.classes.game_setup.card import Card
+from core.classes.game_setup.pack import Pack
 from core.classes.game_setup.player import Player
 from core.classes.moves import moves
 from core.classes.moves.black_numeral_move import suggest_black_numeral_moves
@@ -21,15 +23,6 @@ from interface.gui.gui_interface import get_move_message, get_swap_message
 class GUIGame:
     def __init__(self, board):
         self.board = board
-        self.player1_turn = True
-        self.game_over = False
-        self.valid_move = False
-        self.is_joker = False
-        self.turn = 1
-        self.is_first_move = True
-        self.is_restart_game = False
-        self.card_labels = [[None for _ in range(7)] for _ in range(7)]  # 7x7 grid for labels
-
         # players
         self.player1 = None
         self.player2 = None
@@ -40,6 +33,18 @@ class GUIGame:
         self.game_screen.withdraw()
 
         self.passed_welcome = False
+
+        self.initialize_game_state()
+
+    def initialize_game_state(self):
+        self.player1_turn = True
+        self.game_over = False
+        self.valid_move = False
+        self.is_joker = False
+        self.turn = 1
+        self.is_first_move = True
+        self.is_restart_game = False
+        self.card_labels = [[None for _ in range(7)] for _ in range(7)]  # 7x7 grid for labels
 
         self.black_king = Image.open('resources/romeos/black_king.png').convert('RGBA')
         self.red_king = Image.open('resources/romeos/red_king.png').convert('RGBA')
@@ -55,6 +60,33 @@ class GUIGame:
         self.is_valid_move = tk.StringVar()
 
         self.turn_labels = {}  # Dictionary to store turn labels for each player
+    # TODO: Add any other state initialization as needed
+
+    def reset_game(self):
+        card_pack = Pack()
+        card_pack.shuffle_pack()
+        self.board = Board(card_pack)  # Assuming Board is the class for the game board
+        self.initialize_game_state()
+        # Update the UI to reflect the reset state
+        self.show_game_layout()  # Assuming this method redraws the game board
+        # self.update_card_grid()
+        self.update_button_visibility()
+        self.display_label()  # Update any labels or indicators for the current turn
+        self.player1.set_position(7, 1)
+        self.player2.set_position(1, 7)
+        # self.handle_initial_move(self.player1, self.player2)
+        self.play_game()
+
+        # Any additional UI updates to reflect a new game state
+
+    # def setup_restart_button(self):
+    #     restart_button = tk.Button(self.game_screen, text="Restart Game", command=self.reset_game)
+    #     restart_button.pack(pady=10)  # Adjust placement as needed
+
+    # Reset the board and player positions if necessary
+    # self.board.reset_board() # You might need to implement this method in your board class
+    # self.player1.reset_position() # Reset method for player might be needed
+    # self.player2.reset_position()
 
     def request_players_info(self):
 
@@ -167,6 +199,10 @@ class GUIGame:
         # Button to swap a card
         swap_button = tk.Button(frame, text="Swap a Card", bg='blue', fg='white', font=large_font,
                                 command=lambda: self.swap_card())
+        
+        # self.setup_restart_button()
+        restart_button = tk.Button(frame, text="Restart Game", command=self.reset_game)
+        restart_button.pack(pady=10)
 
         # Store references to the buttons
         if player_number == 1:
@@ -432,7 +468,8 @@ class GUIGame:
         x, y = map(int, self.is_valid_move.get().split(", "))
 
         # update the moves for the player
-        player.moves.append(get_move_message(player.name, (x, y), self.board))
+        player.moves.append(get_move_message(player.name, (x+1, y+1), self.board))
+        print(player.moves)
 
         self.valid_move = True
 
@@ -688,6 +725,7 @@ class GUIGame:
 
                 # update the moves for the player
                 player.moves.append(get_swap_message(player.name, (joker_x, joker_y), (x, y), self.board))
+                print(player.moves)
 
                 # console_ui.display_valid_swap(player.name, (joker_x, joker_y), (x, y), self.board)
                 self.board.card_position[joker_x][joker_y] = board.card_position[x][y]
