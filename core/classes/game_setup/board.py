@@ -154,7 +154,8 @@ class Board:
             if card_obj.card_type == CardType.JOKER:
                 # Assuming 'red_joker.png' or 'black_joker.png' for the joker cards
                 color = 'red' if card_suit in [CardSuit.HEARTS, CardSuit.DIAMONDS] else 'black'
-                card_name = f"{color}_joker.png"
+                # card_name = f"{color}_joker.png"
+                card_name = "joker.png"
             elif card_face == CardFace.KING:
                 card_name = f"king_of_{card_suit.name.lower()}.png"
             elif card_face == CardFace.JACK:
