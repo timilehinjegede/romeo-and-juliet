@@ -568,6 +568,17 @@ class GUIGame:
         self.update_card_grid()
 
     def handle_initial_move(self, player, opponent):
+        if self.is_computer_player and player.player_number == 2:
+            x, y = best_king_move(player.xPosition, player.yPosition, opponent.xPosition, opponent.yPosition, 7, 1,
+                                  player.player_number)
+            player.moves.append(get_move_message(player.name, (x + 1, y + 1), self.board))
+            print(player.moves)
+            self.valid_move = True
+            self.player2.set_position(x + 1, y + 1)
+            self.update_card_grid()
+
+            return
+
         self.valid_move = False
 
         while not self.valid_move:
