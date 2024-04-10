@@ -60,7 +60,47 @@ class GUIGame:
         self.is_valid_move = tk.StringVar()
 
         self.turn_labels = {}  # Dictionary to store turn labels for each player
-    # TODO: Add any other state initialization as needed
+        self.player1_timer_seconds = 10  # For example, 10 minutes per player
+        self.player2_timer_seconds =10
+        self.timer_labels = {}
+        self.timer_task_id = None
+
+    def start_timer(self):
+        self.update_timer()
+
+    def pause_timer(self):
+        if self.timer_task_id is not None:
+            self.game_screen.after_cancel(self.timer_task_id)
+            self.timer_task_id = None
+
+    def resume_timer(self):
+        self.start_timer()
+
+    def update_timer(self):
+        current_player_timer = 'player1_timer_seconds' if self.player1_turn else 'player2_timer_seconds'
+        if getattr(self, current_player_timer) > 0:
+            setattr(self, current_player_timer, getattr(self, current_player_timer) - 1)
+
+            # Calculate minutes and seconds from total seconds
+            minutes, seconds = divmod(getattr(self, current_player_timer), 60)
+        
+            # Update the timer display for the current player with minutes and seconds
+            player_number = "player1" if self.player1_turn else "player2"
+            self.timer_labels[player_number].config(text=f"Time left: {minutes:02d}:{seconds:02d}")
+        
+            # Schedule this method to be called again after 1 second, and save the task ID
+            self.timer_task_id = self.game_screen.after(1000, self.update_timer)
+        else:
+            self.pause_timer()
+            self.end_game_due_to_timeout()
+
+    def end_game_due_to_timeout(self):
+        self.pause_timer()
+        # Determine which player's time ran out and handle game end
+        winner = self.player2 if self.player1_timer_seconds <= 0 else self.player1
+        # gui.messagebox.showinfo("Game Over", f"Time's up! {winner} wins by timeout.")
+        self.show_end_game_summary("Game Over! {} wins!".format(winner.name))
+        # Here you can also offer the option to restart the game or exit
 
     def reset_game(self):
         card_pack = Pack()
@@ -78,6 +118,48 @@ class GUIGame:
         self.play_game()
 
         # Any additional UI updates to reflect a new game state
+
+    def show_end_game_summary(self, title):
+        summary_window = tk.Toplevel(self.game_screen)
+        summary_window.title("Game Summary")
+        summary_window.geometry("400x600")  # Adjust size as needed
+
+        tk.Label(summary_window, text=f"{title}", font=("Arial", 16)).pack(pady=(10, 20))
+
+        # Display moves
+        moves_frame = tk.Frame(summary_window)
+        moves_frame.pack(fill="both", expand=True)
+
+        player1_moves = "\n".join(self.player1.moves)
+        player2_moves = "\n".join(self.player2.moves)
+
+        tk.Label(moves_frame, text=f"{self.player1.name}'s Moves", font=("Arial", 12)).pack(side="left", fill="both", expand=True)
+        tk.Label(moves_frame, text=player1_moves, justify="left").pack(side="left", fill="both", expand=True)
+
+        tk.Label(moves_frame, text=f"{self.player2.name}'s Moves", font=("Arial", 12)).pack(side="right", fill="both", expand=True)
+        tk.Label(moves_frame, text=player2_moves, justify="left").pack(side="right", fill="both", expand=True)
+
+        # Buttons for new game and restart
+        buttons_frame = tk.Frame(summary_window)
+        buttons_frame.pack(fill="x", pady=(20, 10))
+
+        tk.Button(buttons_frame, text="Restart Game", command=self.restart_game).pack(side="left", padx=10)
+        tk.Button(buttons_frame, text="Start New Game", command=self.start_new_game).pack(side="right", padx=10)
+
+        # Automatically start a new game if the summary window is closed
+        summary_window.protocol("WM_DELETE_WINDOW", self.start_new_game)
+
+        summary_window.grab_set()  # Optional: make the summary window modal
+
+    def restart_game(self):
+        self.reset_game()  # Use the reset logic you've already implemented
+    # Additional logic to close the summary window if necessary
+
+    def start_new_game(self):
+        # Logic to start a new game, potentially re-initializing players or other game state
+        self.initialize_game_state()  # Reset the game state
+        self.show_game_layout()  # Show or refresh the game layout
+    # Close the summary window, if open
 
     # def setup_restart_button(self):
     #     restart_button = tk.Button(self.game_screen, text="Restart Game", command=self.reset_game)
@@ -203,6 +285,15 @@ class GUIGame:
         # self.setup_restart_button()
         restart_button = tk.Button(frame, text="Restart Game", command=self.reset_game)
         restart_button.pack(pady=10)
+
+        # Calculate minutes and seconds from total seconds for initial display
+        total_seconds = getattr(self, f'player{player_number}_timer_seconds')
+        minutes, seconds = divmod(total_seconds, 60)
+
+        timer_label = tk.Label(frame, text=f"Time left: {minutes:02d}:{seconds:02d}")
+        timer_label.pack()
+        self.timer_labels[f'player{player_number}'] = timer_label
+
 
         # Store references to the buttons
         if player_number == 1:
@@ -501,7 +592,9 @@ class GUIGame:
         # self.turn += 1
         # self.player1_turn = not self.player1_turn
         if self.is_first_move:
+            self.pause_timer()
             self.player1_turn = not self.player1_turn
+            self.resume_timer()
         print("Initial move completed")
         print("player 1 turn is now:", self.player1_turn)
         self.display_label()
@@ -827,6 +920,8 @@ class GUIGame:
         self.player2 = Player("Kennedy (Player 2)", 2)
         self.show_game_layout()
 
+        self.update_timer()
+
         # # Handle initial moves for both players
         self.display_label()
         self.update_button_visibility()
@@ -874,7 +969,9 @@ class GUIGame:
         self.game_screen.mainloop()
 
     def on_make_move(self, player_number):
+        self.pause_timer()
         self.player1_turn = not self.player1_turn
+        self.resume_timer()
         self.update_button_visibility()
         self.update_card_grid()
         # This method is triggered when a player makes a move
