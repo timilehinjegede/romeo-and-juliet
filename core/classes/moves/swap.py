@@ -59,3 +59,41 @@ class Swap:
 
     def get_swap_y(self):
         return self.swapY
+
+
+def evaluate_swap(swap_x, swap_y, joker_x, joker_y, player, opponent, board, strategic_positions):
+    score = 0
+
+    # Proximity to Objective: Closer is better
+    for obj in strategic_positions:
+        if abs(swap_x - obj[0]) + abs(swap_y - obj[1]) < abs(player.xPosition - obj[0]) + abs(
+                player.yPosition - obj[1]):
+            score += 5
+
+    # Disrupting Opponent: If the swap could block or trap the opponent
+    if abs(swap_x - opponent.xPosition) + abs(swap_y - opponent.yPosition) < 2:
+        score += 3
+
+    # Strategic Positioning: If the swap places you in a key strategic position
+    if (swap_x, swap_y) in strategic_positions:
+        score += 10
+
+    # Avoid Last Swap: Discourage swapping back to the last position immediately
+    if swap_x == player.last_x_swap and swap_y == player.last_y_swap:
+        score -= 10
+
+    return score
+
+
+def get_best_swap(joker_x, joker_y, player, opponent, last_x_swap, last_y_swap, board, strategic_positions):
+    potential_swaps = Swap.suggest_swap_moves(joker_x, joker_y, player, opponent, last_x_swap, last_y_swap, board)
+    best_swap = None
+    highest_score = float('-inf')
+
+    for swap in potential_swaps:
+        score = evaluate_swap(swap[0], swap[1], joker_x, joker_y, player, opponent, board, strategic_positions)
+        if score > highest_score:
+            highest_score = score
+            best_swap = swap
+
+    return best_swap
