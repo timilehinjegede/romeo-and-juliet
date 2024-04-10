@@ -204,11 +204,6 @@ class GUIGame:
 
         intro_window.mainloop()
 
-        # self.player1_move_button
-        # self.player1_swap_button
-        # self.player2_move_button
-        # self.player2_swap_button
-
 
     def update_button_visibility(self):
         # Update button visibility based on current player and whether it's an initial move
@@ -238,7 +233,7 @@ class GUIGame:
                 self.player1_swap_button.pack_forget()
 
     # Define the player sections
-    def create_player_section(self, parent, player_name, nomination, player_number):
+    def create_player_section(self, parent, player_name, nomination, player_number, score):
         frame = tk.Frame(parent)
 
         # Define a larger font
@@ -254,8 +249,13 @@ class GUIGame:
         name_label['font'] = Font(size=10)
         name_label.pack(fill='both')
         name_label = tk.Label(frame, text=player_name, anchor='center', padx=10, pady=10)
-        name_label['font'] = large_font
+        name_label['font'] = Font(size=14, weight='bold')
         name_label.pack(fill='both')
+
+        # Score label
+        score_label = tk.Label(frame, text='Current Score: {}'.format(score), anchor='center', padx=10, pady=10)
+        score_label['font'] = large_font
+        score_label.pack(fill='both')
 
         # Nomination label
         nomination_label = tk.Label(frame, text=nomination, anchor='center', padx=10, pady=10)
@@ -267,17 +267,23 @@ class GUIGame:
         turn_label.pack(fill='both')
         self.turn_labels[player_number] = turn_label
 
+        # Define a custom style for the buttons
+        # Style configuration
+        style = ttk.Style(frame)
+        style.configure('TButton', background='white', foreground='#00A550', font=('Arial', 12, 'bold'), borderwidth=0)
+        style.map('TButton', foreground=[('active', 'green')], background=[('active', 'white')])
+
         # Buttons with color
         # Button to make a move
-        move_button = tk.Button(frame, text="Make a Move", bg='green', fg='white', font=large_font,
-                                command=lambda: self.move_card())
+        move_button = ttk.Button(frame, text="Make a Move",
+                                command=lambda: self.move_card(),style="TButton", width=20, padding=10)
 
         # Button to swap a card
-        swap_button = tk.Button(frame, text="Swap a Card", bg='blue', fg='white', font=large_font,
-                                command=lambda: self.swap_card())
+        swap_button = ttk.Button(frame, text="Swap a Card", 
+                                command=lambda: self.swap_card(),style="TButton", width=20, padding=10)
         
         # self.setup_restart_button()
-        restart_button = tk.Button(frame, text="Restart Game", command=self.reset_game)
+        restart_button = ttk.Button(frame, text="Restart Game", command=self.reset_game,style="TButton", width=20, padding=10)
         restart_button.pack(pady=10)
 
         if self.timer_enabled:
@@ -287,6 +293,7 @@ class GUIGame:
             minutes, seconds = divmod(total_seconds, 60)
 
             timer_label = tk.Label(frame, text=f"Time left: {minutes:02d}:{seconds:02d}")
+            timer_label['font'] = Font(size=8)
             timer_label.pack()
             self.timer_labels[f'player{player_number}'] = timer_label
 
@@ -307,11 +314,17 @@ class GUIGame:
         # is_player_1 = player.player_number == 1
         p = self.player1 if self.player1_turn else self.player2
         if self.is_first_move:
-            self.turn_labels[1].config(text="{}'s - {} Turn for the initial move".format(p.name, p.currentScore))
-            self.turn_labels[2].config(text="{}'s - {} Turn for the initial move".format(p.name, p.currentScore))
+            # self.turn_labels[1].config(text="{}'s - {} Turn for the initial move".format(p.name, p.currentScore))
+            self.turn_labels[1].config(text="{}'s - {} initial move".format(p.name, p.currentScore))
+            self.turn_labels[2].config(text="{}'s - {} initial move".format(p.name, p.currentScore))
+            # self.turn_labels[2].config(text="{}'s - {} Turn for the initial move".format(p.name, p.currentScore))
         else:
-            self.turn_labels[1].config(text="{}'s - {} Turn to make a move or swap a card".format(p.name, p.currentScore))
-            self.turn_labels[2].config(text="{}'s - {} Turn to make a move or swap a card".format(p.name, p.currentScore))
+            self.turn_labels[1].config(text="")
+            self.turn_labels[2].config(text="")
+            # self.turn_labels[1].config(text="{}'s - {} Turn to make a move or swap a card".format(p.name, p.currentScore))
+            # self.turn_labels[1].config(text="{}'s - {} Turn".format(p.name, p.currentScore))
+            # self.turn_labels[2].config(text="{}'s - {} Turn".format(p.name, p.currentScore))
+            # self.turn_labels[2].config(text="{}'s - {} Turn to make a move or swap a card".format(p.name, p.currentScore))
 
         self.turn_labels[1].pack(fill='both')
         self.turn_labels[2].pack(fill='both')
@@ -380,11 +393,11 @@ class GUIGame:
         root = self.game_screen
 
         # Section 1 - Player 1
-        player1_frame = self.create_player_section(root, self.player1.name, "RED PLAYER", 1)
+        player1_frame = self.create_player_section(root, self.player1.name, "RED PLAYER", 1, self.player1.currentScore)
         player1_frame.grid(row=0, column=0, sticky='nswe')
 
         # Section 3 - Player 2
-        player2_frame = self.create_player_section(root, self.player2.name, "BLACK PLAYER", 2)
+        player2_frame = self.create_player_section(root, self.player2.name, "BLACK PLAYER", 2, self.player2.currentScore)
         player2_frame.grid(row=0, column=8, sticky='nswe')
 
         # Section 2 - Card Grid (7x7)
