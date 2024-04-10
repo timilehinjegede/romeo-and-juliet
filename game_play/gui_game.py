@@ -120,7 +120,7 @@ class GUIGame:
         # Any additional UI updates to reflect a new game state
 
     def show_end_game_summary(self, title):
-        summary_window = tk.Toplevel(self.game_screen)
+        summary_window = tk.Toplevel()
         summary_window.title("Game Summary")
         summary_window.geometry("400x600")  # Adjust size as needed
 
@@ -143,19 +143,20 @@ class GUIGame:
         buttons_frame = tk.Frame(summary_window)
         buttons_frame.pack(fill="x", pady=(20, 10))
 
-        tk.Button(buttons_frame, text="Restart Game", command=self.restart_game).pack(side="left", padx=10)
-        tk.Button(buttons_frame, text="Start New Game", command=self.start_new_game).pack(side="right", padx=10)
+        tk.Button(buttons_frame, text="Restart Game", command=lambda: self.restart_game(summary_window)).pack(side="left", padx=10)
+        tk.Button(buttons_frame, text="Start New Game", command=lambda: self.start_new_game(summary_window)).pack(side="right", padx=10)
 
         # Automatically start a new game if the summary window is closed
-        summary_window.protocol("WM_DELETE_WINDOW", self.start_new_game)
+        # summary_window.protocol("WM_DELETE_WINDOW", self.start_new_game)
 
         summary_window.grab_set()  # Optional: make the summary window modal
 
-    def restart_game(self):
+    def restart_game(self, window):
+        window.destroy()  # Close the summary window
         self.reset_game()  # Use the reset logic you've already implemented
     # Additional logic to close the summary window if necessary
 
-    def start_new_game(self):
+    def start_new_game(self, window):
         # Logic to start a new game, potentially re-initializing players or other game state
         self.initialize_game_state()  # Reset the game state
         self.show_game_layout()  # Show or refresh the game layout
