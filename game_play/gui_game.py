@@ -117,8 +117,6 @@ class GUIGame:
         # self.handle_initial_move(self.player1, self.player2)
         self.play_game()
 
-        # Any additional UI updates to reflect a new game state
-
     def show_end_game_summary(self, title):
         summary_window = tk.Toplevel()
         summary_window.title("Game Summary")
@@ -154,22 +152,12 @@ class GUIGame:
     def restart_game(self, window):
         window.destroy()  # Close the summary window
         self.reset_game()  # Use the reset logic you've already implemented
-    # Additional logic to close the summary window if necessary
 
     def start_new_game(self, window):
         # Logic to start a new game, potentially re-initializing players or other game state
         self.initialize_game_state()  # Reset the game state
         self.show_game_layout()  # Show or refresh the game layout
-    # Close the summary window, if open
 
-    # def setup_restart_button(self):
-    #     restart_button = tk.Button(self.game_screen, text="Restart Game", command=self.reset_game)
-    #     restart_button.pack(pady=10)  # Adjust placement as needed
-
-    # Reset the board and player positions if necessary
-    # self.board.reset_board() # You might need to implement this method in your board class
-    # self.player1.reset_position() # Reset method for player might be needed
-    # self.player2.reset_position()
 
     def request_players_info(self):
 
@@ -194,25 +182,6 @@ class GUIGame:
         self.player2_move_button
         self.player2_swap_button
 
-        # ask for the players to enter their names
-        # player1_name = console_ui.ask_for_player_name(1)
-        # player1_name = "Carl (Player 1)"
-        # player2_name = console_ui.ask_for_player_name(2)
-        # player2_name = "Jake (Player 2)"
-
-        # create the players
-        # self.player1 = Player(player1_name, 1)
-        # self.player2 = Player(player2_name, 2)
-
-        # welcome the players
-        # gui.welcome_players(player1_name, player2_name)
-
-        # gui.display_message("{} is nominated as RED (white) and {} is nominated as BLACK".format(player1_name,
-        #                                                                                                 player2_name))
-        # display the initial board
-        # player1 = self.player1
-        # player2 = self.player2
-        # self.board.display_board(player1.xPosition, player1.yPosition, player2.xPosition, player2.yPosition)
 
     def update_button_visibility(self):
         # Update button visibility based on current player and whether it's an initial move
@@ -266,9 +235,6 @@ class GUIGame:
         nomination_label['font'] = large_font
         nomination_label.pack(fill='both')
 
-        # "Your turn" label (shown conditionally, adjust this as per your logic)
-        # turn_label = tk.Label(frame, text="Your turn", anchor='center', padx=10, pady=10)
-        # turn_label['font'] = large_font
         turn_label = tk.Label(frame, text="", anchor='center', padx=0, pady=0, fg='red', width=20, wraplength=150)
         turn_label['font'] = Font(size=8)
         turn_label.pack(fill='both')
@@ -303,10 +269,6 @@ class GUIGame:
         else:
             self.player2_move_button = move_button
             self.player2_swap_button = swap_button
-
-        # "Your turn" label (shown conditionally, adjust this as per your logic)
-        # if player_1_turn:
-        # turn_label.pack(fill='both')
 
         return frame
 
@@ -434,12 +396,6 @@ class GUIGame:
                         y = (120 - king_height) // 2
                         img.paste(king_img, (x, y), king_img)
 
-                    # overlay the king images based on player positions
-                    # if (i, j) == (self.player1.xPosition - 1, self.player1.yPosition - 1):
-                    #     img.paste(self.black_king, (10, 10), self.black_king)
-                    # elif (i, j) == (self.player2.xPosition - 1, self.player2.yPosition - 1):
-                    #     img.paste(self.red_king, (10, 10), self.red_king)
-
                     card_image = ImageTk.PhotoImage(img)
                 else:
                     # You might want to have a default image for empty spaces or a placeholder
@@ -502,28 +458,12 @@ class GUIGame:
             self.handle_initial_move(player, opponent)
 
         else:
-            # console_ui.display_message("\n<Move {}>".format(self.turn))
-            # COME choice = console_ui.turn_choice()
-
-            # if choice == 1:
             self.handle_move_card(player, opponent)
-            # elif choice == 2:
-            # self.handle_swap_card(player, opponent)
 
     def display_current_card(self, player):
         card_face = self.board.get_card_string(player.xPosition, player.yPosition)
         console_ui.add_line_break()
         console_ui.display_message("{} is currently on: {}".format(player.name, card_face))
-
-    def make_move(self, player_number):
-        print(f"Player {player_number} is making a move.")
-        # Implement the logic for making a move
-        # This could involve updating the game state, player positions, etc.
-
-    def swap_cardddd(self, player_number):
-        print(f"Player {player_number} is swapping a card.")
-        # Implement the logic for swapping a card
-        # This could involve changing a card in the player's hand, etc.
 
     def handle_move_card(self, player, opponent):
         # self.update_button_visibility(player.player_number)
@@ -554,7 +494,6 @@ class GUIGame:
 
         self.update_card_grid()
 
-        # chosen_move = moves.choose_move_from_suggestions(king_move_suggestions, self.board)
         self.game_screen.wait_variable(self.is_valid_move)
 
         x, y = map(int, self.is_valid_move.get().split(", "))
@@ -578,7 +517,6 @@ class GUIGame:
         self.valid_move = False
 
         while not self.valid_move:
-            # x, y = self.get_move_coordinates()
             self.display_current_card(player)
             king_move_suggestions = suggest_king_moves(player.xPosition, player.yPosition, opponent.xPosition, opponent.
                                                        yPosition, player.player_number)
@@ -586,12 +524,6 @@ class GUIGame:
             # highlight the card positions for the suggested moves
             self.select_move(king_move_suggestions, player)
 
-            # console_ui.display_valid_move(player.name, self.chosen_move, self.board)
-            # console_ui.add_line_break()
-
-        # self.board.display_board(player.xPosition, player.yPosition, opponent.xPosition, opponent.yPosition)
-        # self.turn += 1
-        # self.player1_turn = not self.player1_turn
         if self.is_first_move:
             self.pause_timer()
             self.player1_turn = not self.player1_turn
@@ -601,16 +533,12 @@ class GUIGame:
         self.display_label()
 
     def handle_joker_move(self, player, opponent):
-        # self.display_label(player)
         joker_suggestions = get_possible_moves_to_joker(player.xPosition, player.yPosition, self.board)
-
-        # chosen_move = moves.choose_move_from_suggestions(joker_suggestions, self.board)
 
         self.highlighted_positions = joker_suggestions
 
         self.update_card_grid()
 
-        # chosen_move = moves.choose_move_from_suggestions(king_move_suggestions, self.board)
         self.game_screen.wait_variable(self.is_valid_move)
 
         x, y = map(int, self.is_valid_move.get().split(", "))
@@ -622,27 +550,19 @@ class GUIGame:
             self.player2.set_position(x + 1, y + 1)
             self.update_card_grid()
 
-            # console_ui.display_valid_move(player.name, (x, y), self.board)
-            # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
-            #                                                                              player.xPosition,
-            #                                                                              player.yPosition))
-            # console_ui.add_line_break()
             return True
 
     def handle_king_move(self, player, opponent):
 
-        # self.display_label(player)
 
         king_move_suggestions = suggest_king_moves(player.xPosition, player.yPosition, opponent.xPosition, opponent.
                                                    yPosition, player.player_number)
-        # chosen_move = moves.choose_move_from_suggestions(king_move_suggestions, self.board)
 
         self.select_move(king_move_suggestions, player)
 
         return True
 
     def handle_knight_move(self, player, opponent):
-        # self.display_label(player)
         knight_move_suggestions = suggest_knight_moves(player, opponent)
 
         self.select_move(knight_move_suggestions, player)
@@ -650,42 +570,14 @@ class GUIGame:
         return True
 
     def handle_black_numeral_move(self, player, opponent):
-        # self.display_label(player)
-
         board = self.board
 
         card_face = board.get_card_string(player.xPosition, player.yPosition)
         move_count = int(card_face[1:3].strip())
 
         black_numeral_move_suggestions = suggest_black_numeral_moves(player, move_count, opponent)
-        # chosen_move = moves.choose_move_from_suggestions(black_numeral_move_suggestions, self.board)
 
         self.select_move(black_numeral_move_suggestions, player)
-
-        # y = chosen_move[1]
-
-        # if not moves.check_move(player.xPosition, y, opponent.xPosition,
-        #                         opponent.yPosition, 1):
-        #     console_ui.display_message("Invalid move, try again!")
-        #     return False
-        # else:
-        #     if y == 0:
-        #         console_ui.display_message("Invalid move, try again!")
-        #         return False
-        #     else:
-        #         if player.player_number == 1:
-        #             self.player1.set_position(player.xPosition, y)
-        #         else:
-        #             self.player2.set_position(player.xPosition, y)
-        #         # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
-        #         #                                                                              player.xPosition,
-        #         #                                                                              player.yPosition))
-        #         # console_ui.display_message('Valid Move!')
-        #         # console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
-        #         console_ui.display_valid_move(player.name, chosen_move, self.board)
-
-        #         console_ui.add_line_break()
-        #         return True
         return True
 
     def handle_red_numeral_move(self, player, opponent):
@@ -696,41 +588,14 @@ class GUIGame:
         move_count = int(card_face[1:3].strip())
 
         red_numeral_move_suggestions = suggest_red_numeral_moves(player, move_count, opponent)
-        # chosen_move = moves.choose_move_from_suggestions(red_numeral_move_suggestions, self.board)
         self.select_move(red_numeral_move_suggestions, player)
 
-        # x = chosen_move[0]
-
-        # if not moves.check_move(x, player.yPosition, opponent.xPosition,
-        #                         opponent.yPosition, 1):
-        #     console_ui.display_message("Invalid move, try again!")
-        #     return False
-        # else:
-        #     if x == 0:
-        #         console_ui.display_message("Invalid move, try again!")
-        #         return False
-        #     else:
-        #         if player.player_number == 1:
-        #             self.player1.set_position(x, player.yPosition)
-        #         else:
-        #             self.player2.set_position(x, player.yPosition)
-        #         # console_ui.display_message("Valid move!\n{}'s new position: [{}][{}]".format(player.name,
-        #         #                                                                              player.xPosition,
-        #         #                                                                              player.yPosition))
-        #         # console_ui.display_message('Valid Move!')
-        #         # console_ui.display_message('{} chose to move to: {}'.format(player.name, chosen_move))
-        #         console_ui.display_valid_move(player.name, chosen_move, self.board)
-
-        #         console_ui.add_line_break()
-        #         return True
         return True
 
     def handle_swap_card(self, player, opponent):
-        # self.update_button_visibility()
         board = self.board
         joker_x, joker_y = 0, 0
-        # console_ui.add_line_break()
-        # console_ui.display_message("Choose a JOKER position...")
+
         if self.player1_turn:
             self.turn_labels[1].config(text="Select a Joker card you want to swap with!")
         else:
@@ -821,23 +686,8 @@ class GUIGame:
                 player.moves.append(get_swap_message(player.name, (joker_x, joker_y), (x, y), self.board))
                 print(player.moves)
 
-                # console_ui.display_valid_swap(player.name, (joker_x, joker_y), (x, y), self.board)
                 self.board.card_position[joker_x][joker_y] = board.card_position[x][y]
                 self.board.card_position[x][y] = Card(None, None, CardType.JOKER)
-
-                # Assuming x, y are the positions of the card to swap with the joker card
-                # joker_card = self.card_labels[joker_x - 1][joker_y - 1]
-                # target_card = self.card_labels[x-1][y-1]
-
-                # Swap images
-                # joker_image = joker_card.cget('image')
-                # target_image = target_card.cget('image')
-
-                # print("joker_image:", joker_image)
-                # print("target_image:", target_image)
-
-                # self.card_labels[joker_x - 1][joker_y - 1].config(image=target_image)
-                # self.card_labels[x - 1][y - 1].config(image=joker_image)
 
                 self.last_x_swap = joker_x
                 self.last_y_swap = joker_y
@@ -876,8 +726,6 @@ class GUIGame:
         self.player1 = Player(player1_name, 1)
         self.player2 = Player(player2_name, 2)
 
-        print('I HAVE PASSED HERE')
-
         intro_window.destroy()
 
         self.passed_welcome = True
@@ -893,10 +741,8 @@ class GUIGame:
 
         root.deiconify()
 
-        print('WITHOUT CLOSING HERE')
-
         # continue the game play here
-        # UNCOM self.play_game()
+        self.play_game()
 
     @staticmethod
     def play_with_ai():
@@ -904,69 +750,32 @@ class GUIGame:
 
     def play_game(self):
 
-        # uncomeif not self.passed_welcome:
-        #     print('hello')
-        #     print(self.board)
+        if not self.passed_welcome:
 
-        #     # get names from the players
-        #     self.request_players_info()
+            # get names from the players
+            self.request_players_info()
 
-        #     print('IS IT HETTIGN HERE BEFORE THERE')
-        # else:
-        # uncome    print('WHAT NEXT HERE')
+        else:
+            self.show_game_layout()
 
-        # continue your logic bro
-        self.show_game_screen()
-        self.player1 = Player("Timilehin (Player 1)", 1)
-        self.player2 = Player("Kennedy (Player 2)", 2)
-        self.show_game_layout()
+            self.update_timer()
 
-        self.update_timer()
+            # Handle initial moves for both players
+            self.display_label()
+            self.update_button_visibility()
 
-        # # Handle initial moves for both players
-        self.display_label()
-        self.update_button_visibility()
+            self.handle_initial_move(self.player1, self.player2)
 
-        # console_ui.display_message("{}'s turn for the initial move".format(self.player1.name))
-        self.handle_initial_move(self.player1, self.player2)
+            self.display_label()
+            self.update_button_visibility()
 
-        self.display_label()
-        self.update_button_visibility()
-        # console_ui.display_message("{}'s turn for the initial move".format(self.player2.name))
-        self.handle_initial_move(self.player2, self.player1)
+            self.handle_initial_move(self.player2, self.player1)
 
-        # # After initial moves, continue with regular game loop
-        self.is_first_move = False
-        self.update_card_grid()
-        self.update_button_visibility()
+            # After initial moves, continue with regular game loop
+            self.is_first_move = False
+            self.update_card_grid()
+            self.update_button_visibility()
 
-        # while not self.game_over:
-        #     current_player = self.player1 if self.player1_turn else self.player2
-        #     opponent = self.player2 if self.player1_turn else self.player1
-
-        #     self.player1_turn = not self.player1_turn
-        #     # console_ui.add_line_break()
-
-        #     # console_ui.display_message("{}'s turn".format(current_player.name))
-        #     self.display_current_card(current_player)
-        #     # console_ui.add_line_break()
-
-        #     self.handle_player_move(current_player, opponent)
-
-        #     if moves.check_winning_move(current_player.xPosition, current_player.yPosition):
-        #         self.game_over = True
-        #         console_ui.display_message('')
-        #         console_ui.add_line_break()
-        #         console_ui.display_message("{} wins!".format(current_player.name))
-        #         console_ui.add_line_break()
-
-        #     self.player1_turn = not self.player1_turn
-        #     self.board.display_board(self.player1.xPosition, self.player1.yPosition, self.player2.xPosition,
-        #                              self.player2.yPosition)
-
-        #     # if not self.player1_turn:  # This means Player 2 just completed their turn
-        #     self.turn += 1
-        # console_ui.display_message('===== Game Ended =====')
         self.game_screen.mainloop()
 
     def on_make_move(self, player_number):
@@ -975,6 +784,7 @@ class GUIGame:
         self.resume_timer()
         self.update_button_visibility()
         self.update_card_grid()
+
         # This method is triggered when a player makes a move
         current_player = self.player1 if player_number == 1 else self.player2
         # opponent = self.player2 if player_number == 1 else self.player1
@@ -986,7 +796,7 @@ class GUIGame:
         if moves.check_winning_move(current_player.xPosition, current_player.yPosition):
             self.game_over = True
             # Update UI to show the winning message
-            gui.messagebox.showinfo("WINNER FOUND!!!", f"{current_player.name} wins the game!")
+            self.show_end_game_summary("WINNER FOUND!!!", f"{current_player.name} wins the game!")
 
 
             # end game summary
