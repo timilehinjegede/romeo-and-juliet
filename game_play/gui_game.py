@@ -60,8 +60,8 @@ class GUIGame:
         self.is_valid_move = tk.StringVar()
 
         self.turn_labels = {}  # Dictionary to store turn labels for each player
-        self.player1_timer_seconds = 10  # For example, 10 minutes per player
-        self.player2_timer_seconds =10
+        self.player1_timer_seconds = 600  # For example, 10 minutes per player
+        self.player2_timer_seconds = 600
         self.timer_labels = {}
         self.timer_task_id = None
 
