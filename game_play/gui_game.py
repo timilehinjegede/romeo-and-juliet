@@ -69,6 +69,8 @@ class GUIGame:
         self.timer_enabled = False
         self.hints_enabled = False
 
+        self.is_computer_player = False
+
     def start_timer(self):
         self.update_timer()
 
@@ -195,7 +197,7 @@ class GUIGame:
 
         play_with_human_button = ttk.Button(intro_window, text="Play with Human",
                                            command=lambda: self.play_with_human(intro_window), style="TButton", width=30, padding=10)
-        play_with_ai_button = ttk.Button(intro_window, text="Play with Computer", command=self.play_with_ai, style="TButton", width=30, padding=10)
+        play_with_ai_button = ttk.Button(intro_window, text="Play with Computer", command=self.play_with_computer, style="TButton", width=30, padding=10)
         game_rules_button = ttk.Button(intro_window, text="Game Rules", command=gui.show_game_rules, style="TButton", width=30, padding=10)
 
         play_with_human_button.pack(pady=10)
@@ -858,9 +860,18 @@ class GUIGame:
         # continue the game play here
         self.play_game()
 
-    @staticmethod
-    def play_with_ai():
-        gui.messagebox.showinfo("Coming Soon", "Play with AI feature is coming soon!")
+    def play_with_computer(self, intro_window):
+        player1_name = gui.ask_player_name("Player 1", intro_window)
+
+        print('player1_name:', player1_name)
+        self.player1 = Player(player1_name, 1)
+        self.player2 = Player('Computer Player', 2)
+
+        self.passed_welcome = True
+
+        intro_window.destroy()
+
+        self.show_game_screen()
 
     def play_game(self):
 

@@ -34,3 +34,26 @@ def suggest_king_moves(x_position, y_position, opponent_player_x, opponent_playe
 
     # Returns a list of all valid moves the king can make from its current position
     return potential_moves
+
+
+def evaluate_king_move(x, y, goal_x, goal_y):
+    # Simple Euclidean distance for evaluation
+    return ((x - goal_x) ** 2 + (y - goal_y) ** 2) ** 0.5
+
+
+def find_best_king_move(x_position, y_position, opponent_x, opponent_y, goal_x, goal_y, player_number):
+    potential_moves = suggest_king_moves(x_position, y_position, opponent_x, opponent_y, player_number)
+    best_move = None
+    min_distance = float('inf')  # Start with an infinitely large distance
+
+    for move in potential_moves:
+        new_x, new_y = move
+        distance = evaluate_king_move(new_x, new_y, goal_x, goal_y)
+
+        # Update best move if this move is closer to the goal
+        if distance < min_distance:
+            min_distance = distance
+            best_move = move
+
+    return best_move
+
