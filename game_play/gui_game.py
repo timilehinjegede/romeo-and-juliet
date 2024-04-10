@@ -46,8 +46,8 @@ class GUIGame:
         self.is_restart_game = False
         self.card_labels = [[None for _ in range(7)] for _ in range(7)]  # 7x7 grid for labels
 
-        self.black_king = Image.open('resources/romeos/black_king.png').convert('RGBA')
-        self.red_king = Image.open('resources/romeos/red_king.png').convert('RGBA')
+        self.black_king = Image.open('resources/romeos/new_black_king.png').convert('RGBA')
+        self.red_king = Image.open('resources/romeos/new_red_king.png').convert('RGBA')
 
         self.highlighted_positions = []
         self.chosen_move = None
