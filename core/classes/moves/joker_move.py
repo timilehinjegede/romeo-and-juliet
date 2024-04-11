@@ -151,27 +151,23 @@ def calculate_chebyshev_distance(point_a, point_b):
     return max(abs(point_a[0] - point_b[0]), abs(point_a[1] - point_b[1]))
 
 
-def evaluate_joker_move(origin, current_position, opponent_position, strategic_positions):
-    # Example evaluation criteria
+def evaluate_joker_move(origin, current_position, opponent_position):
     score = 0
 
-    # Proximity to objectives
-    for objective in strategic_positions:
-        score -= calculate_chebyshev_distance(origin, objective)
-
-    # Safety from opponents
-    score -= calculate_chebyshev_distance(origin, opponent_position) * 2  # Weighted for demonstration
+    # Decrease score based on proximity to the opponent
+    opponent_distance = calculate_chebyshev_distance(origin, opponent_position)
+    score -= opponent_distance
 
     return score
 
 
-def best_joker_move(joker_x, joker_y, board, opponent_position, strategic_positions):
+def best_joker_move(joker_x, joker_y, board, opponent_position):
     potential_origins = get_possible_moves_to_joker(joker_x, joker_y, board)
     best_move = None
     best_score = float('-inf')
 
     for origin in potential_origins:
-        score = evaluate_joker_move(origin, (joker_x, joker_y), opponent_position, strategic_positions)
+        score = evaluate_joker_move(origin, (joker_x, joker_y), opponent_position)
         if score > best_score:
             best_score = score
             best_move = origin

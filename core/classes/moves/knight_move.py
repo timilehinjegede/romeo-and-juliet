@@ -30,9 +30,10 @@ def suggest_knight_moves(player, opponent):
 def evaluate_knight_move(move, player, opponent, goal_position):
     score = 0
     move_x, move_y = move
+    goal_x, goal_y = goal_position
 
     # Proximity to Objective: Closer moves are better
-    goal_distance = abs(move_x - goal_position.x) + abs(move_y - goal_position.y)
+    goal_distance = abs(move_x - goal_x) + abs(move_y - goal_y)
     score -= goal_distance  # Decrease score by distance to goal
 
     # Avoiding the Opponent: Prefer moves that increase distance from the opponent

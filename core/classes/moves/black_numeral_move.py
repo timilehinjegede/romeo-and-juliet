@@ -47,9 +47,10 @@ def suggest_black_numeral_moves(player, move_count, opponent):
 def evaluate_horizontal_move(move, player, opponent, goal_position):
     score = 0
     _, move_y = move
+    goal_x, goal_y = goal_position
 
     # Calculate horizontal distance to the goal and adjust the score inversely
-    goal_distance = abs(move_y - goal_position.y)
+    goal_distance = abs(move_y - goal_y)
     score -= goal_distance  # Closer to goal is better
 
     # Optionally, consider distance from the opponent for safety

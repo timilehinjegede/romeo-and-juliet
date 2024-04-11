@@ -7,11 +7,11 @@ from core.classes.game_setup.card import Card
 from core.classes.game_setup.pack import Pack
 from core.classes.game_setup.player import Player
 from core.classes.moves import moves
-from core.classes.moves.black_numeral_move import suggest_black_numeral_moves
-from core.classes.moves.joker_move import suggest_joker_positions, get_possible_moves_to_joker
-from core.classes.moves.king_move import suggest_king_moves
-from core.classes.moves.knight_move import suggest_knight_moves
-from core.classes.moves.red_numeral_move import suggest_red_numeral_moves
+from core.classes.moves.black_numeral_move import best_black_numeral_move, suggest_black_numeral_moves
+from core.classes.moves.joker_move import best_joker_move, suggest_joker_positions, get_possible_moves_to_joker
+from core.classes.moves.king_move import best_king_move, suggest_king_moves
+from core.classes.moves.knight_move import best_knight_move, suggest_knight_moves
+from core.classes.moves.red_numeral_move import best_red_numeral_move, suggest_red_numeral_moves
 from core.classes.moves.swap import Swap
 from core.enums.card_type import CardType
 from interface.console import console_ui
@@ -197,7 +197,7 @@ class GUIGame:
 
         play_with_human_button = ttk.Button(intro_window, text="Play with Human",
                                            command=lambda: self.play_with_human(intro_window), style="TButton", width=30, padding=10)
-        play_with_ai_button = ttk.Button(intro_window, text="Play with Computer", command=self.play_with_computer, style="TButton", width=30, padding=10)
+        play_with_ai_button = ttk.Button(intro_window, text="Play with Computer", command=lambda: self.play_with_computer(intro_window), style="TButton", width=30, padding=10)
         game_rules_button = ttk.Button(intro_window, text="Game Rules", command=gui.show_game_rules, style="TButton", width=30, padding=10)
 
         play_with_human_button.pack(pady=10)
@@ -566,17 +566,20 @@ class GUIGame:
             self.player2.set_position(x + 1, y + 1)
 
         self.update_card_grid()
+    
+    def handle_computer_move(self, x, y):
+        self.player2.moves.append(get_move_message(self.player2.name, (x, y), self.board))
+        print(self.player2.moves)
+        self.valid_move = True
+        self.player2.set_position(x, y)
+        self.update_card_grid()
 
     def handle_initial_move(self, player, opponent):
         if self.is_computer_player and player.player_number == 2:
             x, y = best_king_move(player.xPosition, player.yPosition, opponent.xPosition, opponent.yPosition, 7, 1,
                                   player.player_number)
-            player.moves.append(get_move_message(player.name, (x + 1, y + 1), self.board))
-            print(player.moves)
-            self.valid_move = True
-            self.player2.set_position(x + 1, y + 1)
-            self.update_card_grid()
-
+            self.handle_computer_move(x, y)
+            self.player1_turn = not self.player1_turn
             return
 
         self.valid_move = False
@@ -600,6 +603,11 @@ class GUIGame:
         self.display_label()
 
     def handle_joker_move(self, player, opponent):
+        if self.is_computer_player and player.player_number == 2:
+            x, y = best_joker_move(player.xPosition, player.yPosition, self.board, (opponent.xPosition, opponent.yPosition))
+            self.handle_computer_move(x, y)
+            return True
+
         joker_suggestions = get_possible_moves_to_joker(player.xPosition, player.yPosition, self.board)
 
         self.highlighted_positions = joker_suggestions
@@ -621,7 +629,12 @@ class GUIGame:
 
     def handle_king_move(self, player, opponent):
 
-
+        if self.is_computer_player and player.player_number == 2:
+            x, y = best_king_move(player.xPosition, player.yPosition, opponent.xPosition, opponent.yPosition, 7, 1,
+                                  player.player_number)
+            self.handle_computer_move(x, y)
+            return True
+        
         king_move_suggestions = suggest_king_moves(player.xPosition, player.yPosition, opponent.xPosition, opponent.
                                                    yPosition, player.player_number)
 
@@ -630,6 +643,11 @@ class GUIGame:
         return True
 
     def handle_knight_move(self, player, opponent):
+        if self.is_computer_player and player.player_number == 2:
+            x, y = best_knight_move(player, opponent, (7, 1))
+            self.handle_computer_move(x, y)
+            return True
+        
         knight_move_suggestions = suggest_knight_moves(player, opponent)
 
         self.select_move(knight_move_suggestions, player)
@@ -637,10 +655,17 @@ class GUIGame:
         return True
 
     def handle_black_numeral_move(self, player, opponent):
+                
         board = self.board
 
         card_face = board.get_card_string(player.xPosition, player.yPosition)
         move_count = int(card_face[1:3].strip())
+
+        if self.is_computer_player and player.player_number == 2:
+            x, y = best_black_numeral_move(player, move_count, opponent, 1)
+            self.handle_computer_move(x, y)
+            return True
+
 
         black_numeral_move_suggestions = suggest_black_numeral_moves(player, move_count, opponent)
 
@@ -653,6 +678,12 @@ class GUIGame:
         board = self.board
         card_face = board.get_card_string(player.xPosition, player.yPosition)
         move_count = int(card_face[1:3].strip())
+
+        if self.is_computer_player and player.player_number == 2:
+            x, y = best_red_numeral_move(player, move_count, opponent, (7,1))
+            self.handle_computer_move(x, y)
+            return True
+
 
         red_numeral_move_suggestions = suggest_red_numeral_moves(player, move_count, opponent)
         self.select_move(red_numeral_move_suggestions, player)
@@ -872,6 +903,7 @@ class GUIGame:
         self.play_game()
 
     def play_with_computer(self, intro_window):
+        self.is_computer_player = True
         player1_name = gui.ask_player_name("Player 1", intro_window)
 
         print('player1_name:', player1_name)
@@ -880,9 +912,9 @@ class GUIGame:
 
         self.passed_welcome = True
 
-        intro_window.destroy()
-
         self.show_game_screen()
+
+        intro_window.destroy()
 
     def play_game(self):
 
@@ -923,6 +955,9 @@ class GUIGame:
             self.resume_timer()
         self.update_button_visibility()
         self.update_card_grid()
+
+        if self.is_computer_player and player_number == 2:
+            self.handle_move_card(self.player2, self.player1)
 
         # This method is triggered when a player makes a move
         current_player = self.player1 if player_number == 1 else self.player2

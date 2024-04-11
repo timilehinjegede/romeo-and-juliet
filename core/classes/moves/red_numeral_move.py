@@ -63,9 +63,10 @@ def best_red_numeral_move(player, move_count, opponent, goal_position):
 def evaluate_move(move, player, opponent, goal_position):
     score = 0
     move_x, move_y = move
+    goal_x, goal_y = goal_position
 
     # Calculate the distance to the goal and inversely adjust the score
-    goal_distance = calculate_distance(move_x, move_y, goal_position.x, goal_position.y)
+    goal_distance = calculate_distance(move_x, move_y, goal_x, goal_y)
     score -= goal_distance  # Less distance is better
 
     # Add more evaluations as needed, for example, avoiding the opponent

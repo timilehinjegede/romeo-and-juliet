@@ -41,7 +41,7 @@ def evaluate_king_move(x, y, goal_x, goal_y):
     return ((x - goal_x) ** 2 + (y - goal_y) ** 2) ** 0.5
 
 
-def find_best_king_move(x_position, y_position, opponent_x, opponent_y, goal_x, goal_y, player_number):
+def best_king_move(x_position, y_position, opponent_x, opponent_y, goal_x, goal_y, player_number):
     potential_moves = suggest_king_moves(x_position, y_position, opponent_x, opponent_y, player_number)
     best_move = None
     min_distance = float('inf')  # Start with an infinitely large distance
