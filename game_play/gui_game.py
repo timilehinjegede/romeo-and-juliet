@@ -348,15 +348,15 @@ class GUIGame:
         p = self.player1 if self.player1_turn else self.player2
         if self.is_first_move:
             # self.turn_labels[1].config(text="{}'s - {} Turn for the initial move".format(p.name, p.currentScore))
-            self.turn_labels[1].config(text="{}'s - {} initial move".format(p.name, p.currentScore))
-            self.turn_labels[2].config(text="{}'s - {} initial move".format(p.name, p.currentScore))
+            self.turn_labels[1].config(text="{}'s initial move".format(p.name))
+            self.turn_labels[2].config(text="{}'s initial move".format(p.name))
             # self.turn_labels[2].config(text="{}'s - {} Turn for the initial move".format(p.name, p.currentScore))
         else:
             # self.turn_labels[1].config(text="")
             # self.turn_labels[2].config(text="")
             # self.turn_labels[1].config(text="{}'s - {} Turn to make a move or swap a card".format(p.name, p.currentScore))
-            self.turn_labels[1].config(text="{}'s - {} Turn".format(p.name, p.currentScore))
-            self.turn_labels[2].config(text="{}'s - {} Turn".format(p.name, p.currentScore))
+            self.turn_labels[1].config(text="{}'s Turn".format(p.name))
+            self.turn_labels[2].config(text="{}'s Turn".format(p.name))
             # self.turn_labels[2].config(text="{}'s - {} Turn to make a move or swap a card".format(p.name, p.currentScore))
 
         self.turn_labels[1].pack(fill='both')
@@ -603,6 +603,7 @@ class GUIGame:
                                   player.player_number)
             self.handle_computer_move(x, y)
             self.player1_turn = not self.player1_turn
+            self.display_label()
             return
 
         self.valid_move = False
@@ -937,41 +938,11 @@ class GUIGame:
 
         self.passed_welcome = True
 
-        self.show_game_screen()
+        #self.show_game_screen()
 
         intro_window.destroy()
 
-    def play_game(self):
-
-        if not self.passed_welcome:
-
-            # get names from the players
-            self.request_players_info()
-
-        else:
-            if (not self.is_restart_game):
-                self.show_game_layout()
-
-            if self.timer_enabled: 
-                self.update_timer()
-
-            # Handle initial moves for both players
-            self.display_label()
-            self.update_button_visibility()
-
-            self.handle_initial_move(self.player1, self.player2)
-
-            self.display_label()
-            self.update_button_visibility()
-
-            self.handle_initial_move(self.player2, self.player1)
-
-            # After initial moves, continue with regular game loop
-            self.is_first_move = False
-            self.update_card_grid()
-            self.update_button_visibility()
-
-        self.game_screen.mainloop()
+        self.show_game_screen()
 
     def on_make_move(self, player_number):
         if self.timer_enabled:
@@ -981,6 +952,7 @@ class GUIGame:
             self.resume_timer()
         self.update_button_visibility()
         self.update_card_grid()
+        self.display_label()
 
         # This method is triggered when a player makes a move
         current_player = self.player1 if player_number == 1 else self.player2
@@ -1016,4 +988,40 @@ class GUIGame:
             if self.is_computer_player and not self.player1_turn:
                 # time.sleep(2)
                 # self.handle_move_card(self.player2, self.player1)
-                self.game_screen.after(2000, self.handle_move_card, self.player2, self.player1)
+                self.game_screen.after(1000, self.handle_move_card, self.player2, self.player1)
+                self.display_label()
+
+    def play_game(self):
+
+        if not self.passed_welcome:
+
+            # get names from the players
+            self.request_players_info()
+
+        else:
+            if (not self.is_restart_game):
+                self.show_game_layout()
+
+            if self.timer_enabled: 
+                self.update_timer()
+
+            # Handle initial moves for both players
+            self.display_label()
+            self.update_button_visibility()
+
+            self.handle_initial_move(self.player1, self.player2)
+
+            self.display_label()
+            self.update_button_visibility()
+
+            self.handle_initial_move(self.player2, self.player1)
+            
+            self.display_label()
+
+
+            # After initial moves, continue with regular game loop
+            self.is_first_move = False
+            self.update_card_grid()
+            self.update_button_visibility()
+
+        self.game_screen.mainloop()
