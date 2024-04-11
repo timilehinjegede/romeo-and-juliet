@@ -1,4 +1,3 @@
-import time
 import tkinter as tk
 
 from tkinter import ttk
@@ -45,7 +44,7 @@ class GUIGame:
         self.turn_labels = {}  # Dictionary to store turn labels for each player
         self.timer_labels = {}
         self.is_computer_player = False
-        
+
         self.initialize_game_state()
 
     def initialize_game_state(self):
@@ -70,13 +69,12 @@ class GUIGame:
         # self.turn_labels = {}  # Dictionary to store turn labels for each player
         self.player1_timer_seconds = 0  # For example, 10 minutes per player
         self.player2_timer_seconds = 0
-        
+
         self.timer_task_id = None
 
         self.timer_enabled = False
         self.hints_enabled = False
         self.computer_move_counter = 0
-
 
     def start_timer(self):
         self.update_timer()
@@ -96,11 +94,12 @@ class GUIGame:
 
             # Calculate minutes and seconds from total seconds
             minutes, seconds = divmod(getattr(self, current_player_timer), 60)
-        
+
             # Update the timer display for the current player with minutes and seconds
             player_number = "player1" if self.player1_turn else "player2"
-            self.timer_labels[player_number].config(text=f"Time left: {minutes:02d}:{seconds:02d}", font=Font(size=12, weight='bold'))
-        
+            self.timer_labels[player_number].config(text=f"Time left: {minutes:02d}:{seconds:02d}",
+                                                    font=Font(size=12, weight='bold'))
+
             # Schedule this method to be called again after 1 second, and save the task ID
             self.timer_task_id = self.game_screen.after(1000, self.update_timer)
         else:
@@ -162,12 +161,16 @@ class GUIGame:
         player2_moves = "\n".join(self.player2.moves)  # Placeholder
 
         # Player 1's moves
-        tk.Label(player1_frame, text=f"{self.player1.name}'s Moves", font=("Arial", 12), bg='#00A550', fg='white').pack(fill="x")
-        tk.Label(player1_frame, text=player1_moves, justify="left", anchor="w", bg='#00A550', fg='white').pack(fill="both", expand=True)
+        tk.Label(player1_frame, text=f"{self.player1.name}'s Moves", font=("Arial", 12), bg='#00A550', fg='white').pack(
+            fill="x")
+        tk.Label(player1_frame, text=player1_moves, justify="left", anchor="w", bg='#00A550', fg='white').pack(
+            fill="both", expand=True)
 
         # Player 2's moves
-        tk.Label(player2_frame, text=f"{self.player2.name}'s Moves", font=("Arial", 12), bg='#00A550', fg='white').pack(fill="x")
-        tk.Label(player2_frame, text=player2_moves, justify="left", anchor="e", bg='#00A550', fg='white').pack(fill="both", expand=True)
+        tk.Label(player2_frame, text=f"{self.player2.name}'s Moves", font=("Arial", 12), bg='#00A550', fg='white').pack(
+            fill="x")
+        tk.Label(player2_frame, text=player2_moves, justify="left", anchor="e", bg='#00A550', fg='white').pack(
+            fill="both", expand=True)
 
         # Define a custom style for the buttons
         # Style configuration
@@ -179,7 +182,8 @@ class GUIGame:
         buttons_frame = tk.Frame(summary_window)
         buttons_frame.pack(fill="x", pady=(20, 10), padx=20)
 
-        ttk.Button(buttons_frame, text="Restart Game", command=lambda: self.restart_game(summary_window), style="TButton", width=20, padding=10).pack()
+        ttk.Button(buttons_frame, text="Restart Game", command=lambda: self.restart_game(summary_window),
+                   style="TButton", width=20, padding=10).pack()
 
         summary_window.grab_set()
 
@@ -200,7 +204,8 @@ class GUIGame:
 
         gui.center_window(intro_window, 900, 900)
 
-        text_widget = tk.Label(intro_window, text="WELCOME TO", bg='#00A550', fg='white', font=Font(size=17, weight='bold'))
+        text_widget = tk.Label(intro_window, text="WELCOME TO", bg='#00A550', fg='white',
+                               font=Font(size=17, weight='bold'))
         text_widget.pack(padx=10, pady=60)
 
         image_path = "resources/romeo_logo.png"
@@ -221,16 +226,19 @@ class GUIGame:
         style.map('TButton', foreground=[('active', 'green')], background=[('active', 'white')])
 
         play_with_human_button = ttk.Button(intro_window, text="Play with Human",
-                                           command=lambda: self.play_with_human(intro_window), style="TButton", width=30, padding=10)
-        play_with_ai_button = ttk.Button(intro_window, text="Play with Computer", command=lambda: self.play_with_computer(intro_window), style="TButton", width=30, padding=10)
-        game_rules_button = ttk.Button(intro_window, text="Game Rules", command=gui.show_game_rules, style="TButton", width=30, padding=10)
+                                            command=lambda: self.play_with_human(intro_window), style="TButton",
+                                            width=30, padding=10)
+        play_with_ai_button = ttk.Button(intro_window, text="Play with Computer",
+                                         command=lambda: self.play_with_computer(intro_window), style="TButton",
+                                         width=30, padding=10)
+        game_rules_button = ttk.Button(intro_window, text="Game Rules", command=gui.show_game_rules, style="TButton",
+                                       width=30, padding=10)
 
         play_with_human_button.pack(pady=10)
         play_with_ai_button.pack(pady=10)
         game_rules_button.pack(pady=10)
 
         intro_window.mainloop()
-
 
     def update_button_visibility(self):
         # Update button visibility based on current player and whether it's an initial move
@@ -271,7 +279,8 @@ class GUIGame:
         bottom_spacer.pack(fill='both', expand=True)
 
         # Player number label
-        name_label = tk.Label(frame, text='Player {}'.format(player_number), anchor='center', padx=10, pady=10, bg='#00A550', fg='white')
+        name_label = tk.Label(frame, text='Player {}'.format(player_number), anchor='center', padx=10, pady=10,
+                              bg='#00A550', fg='white')
         name_label['font'] = large_font
         name_label.pack(fill='both', pady=15)
 
@@ -284,7 +293,8 @@ class GUIGame:
         name_label.pack(fill='both')
 
         # Score label
-        score_label = tk.Label(frame, text='Current Score: {}'.format(score), anchor='center', padx=10, pady=10, bg='#00A550', fg='white')
+        score_label = tk.Label(frame, text='Current Score: {}'.format(score), anchor='center', padx=10, pady=10,
+                               bg='#00A550', fg='white')
         score_label['font'] = large_font
         score_label.pack(fill='both')
 
@@ -293,7 +303,8 @@ class GUIGame:
         nomination_label['font'] = large_font
         nomination_label.pack(fill='both')
 
-        turn_label = tk.Label(frame, text="", anchor='center', padx=0, pady=0, width=20, wraplength=150, bg='#00A550', fg='white')
+        turn_label = tk.Label(frame, text="", anchor='center', padx=0, pady=0, width=20, wraplength=150, bg='#00A550',
+                              fg='white')
         turn_label['font'] = Font(size=8)
         turn_label.pack(fill='both')
         self.turn_labels[player_number] = turn_label
@@ -307,18 +318,18 @@ class GUIGame:
         # Buttons with color
         # Button to make a move
         move_button = ttk.Button(frame, text="Make a Move",
-                                command=lambda: self.move_card(),style="TButton", width=20, padding=10)
+                                 command=lambda: self.move_card(), style="TButton", width=20, padding=10)
 
         # Button to swap a card
-        swap_button = ttk.Button(frame, text="Swap a Card", 
-                                command=lambda: self.swap_card(),style="TButton", width=20, padding=10)
-        
+        swap_button = ttk.Button(frame, text="Swap a Card",
+                                 command=lambda: self.swap_card(), style="TButton", width=20, padding=10)
+
         # self.setup_restart_button()
-        restart_button = ttk.Button(frame, text="Restart Game", command=self.reset_game,style="TButton", width=20, padding=10)
+        restart_button = ttk.Button(frame, text="Restart Game", command=self.reset_game, style="TButton", width=20,
+                                    padding=10)
         restart_button.pack(pady=10)
 
         if self.timer_enabled:
-
             # Calculate minutes and seconds from total seconds for initial display
             total_seconds = getattr(self, f'player{player_number}_timer_seconds')
             minutes, seconds = divmod(total_seconds, 60)
@@ -327,7 +338,6 @@ class GUIGame:
             timer_label['font'] = Font(size=8)
             timer_label.pack()
             self.timer_labels[f'player{player_number}'] = timer_label
-
 
         # Store references to the buttons
         if player_number == 1:
@@ -413,7 +423,7 @@ class GUIGame:
                 position = (i, j)
                 if position in self.highlighted_positions:
                     king_img = self.black_king if (i, j) == (
-                    self.player1.xPosition, self.player1.yPosition) else self.red_king
+                        self.player1.xPosition, self.player1.yPosition) else self.red_king
                     color = 'red' if self.player1_turn else 'black'
                     self.card_labels[grid_i][grid_j].config(highlightthickness=5, highlightbackground=color)
                     self.card_labels[grid_i][grid_j].bind("<Button-1>",
@@ -431,7 +441,8 @@ class GUIGame:
         main_frame.pack(fill="both", expand=True)
 
         # Section 1 - Player 1
-        player1_frame = self.create_player_section(main_frame, self.player1.name, "RED PLAYER", 1, self.player1.currentScore)
+        player1_frame = self.create_player_section(main_frame, self.player1.name, "RED PLAYER", 1,
+                                                   self.player1.currentScore)
         player1_frame.pack(side="left", fill="both", expand=True, anchor="center")
 
         # Section 2 - Card Grid (7x7)
@@ -439,15 +450,16 @@ class GUIGame:
         # Initialize a 7x7 grid of Labels to hold card images
         card_frame = tk.Frame(main_frame, bg="#00A550")
         card_frame.pack(side="left", fill="both", expand=True, anchor="center")
-        
+
         # Section 3 - Player 2
-        player2_frame = self.create_player_section(main_frame, self.player2.name, "BLACK PLAYER", 2, self.player2.currentScore)
+        player2_frame = self.create_player_section(main_frame, self.player2.name, "BLACK PLAYER", 2,
+                                                   self.player2.currentScore)
         player2_frame.pack(side="left", fill="both", expand=True, anchor="center")
 
         card_width = 110
         card_height = 125
 
-                # Initialize a 7x7 grid of Labels to hold card images
+        # Initialize a 7x7 grid of Labels to hold card images
         self.card_labels = [[tk.Label(card_frame) for _ in range(7)] for _ in range(7)]
         for i in range(1, 8):
             for j in range(1, 8):
@@ -470,7 +482,7 @@ class GUIGame:
                     if (i, j) in [(self.player1.xPosition, self.player1.yPosition),
                                   (self.player2.xPosition, self.player2.yPosition)]:
                         king_img = self.black_king if (i, j) == (
-                        self.player1.xPosition, self.player1.yPosition) else self.red_king
+                            self.player1.xPosition, self.player1.yPosition) else self.red_king
                         king_width, king_height = king_img.size
                         x = (card_width - king_width) // 2
                         y = (card_height - king_height) // 2
@@ -496,16 +508,17 @@ class GUIGame:
                     self.card_labels[grid_i][grid_j].bind("<Button-1>",
                                                           lambda e, x=grid_i, y=grid_j: self.on_card_click(x, y, False))
         # Configure the grid weight
-      #  root.grid_rowconfigure(0, weight=1)
 
-       # for i in range(7):
-         #   root.grid_columnconfigure(i, weight=1)
-          #  card_frame.grid_rowconfigure(i, weight=1)
-            #card_frame.grid_columnconfigure(i, weight=1)
+    #  root.grid_rowconfigure(0, weight=1)
 
-        # Player sections weight configuration
-     #   root.grid_columnconfigure(0, weight=1)
-        #root.grid_columnconfigure(8, weight=1)
+    # for i in range(7):
+    #   root.grid_columnconfigure(i, weight=1)
+    #  card_frame.grid_rowconfigure(i, weight=1)
+    # card_frame.grid_columnconfigure(i, weight=1)
+
+    # Player sections weight configuration
+    #   root.grid_columnconfigure(0, weight=1)
+    # root.grid_columnconfigure(8, weight=1)
 
     def move_card(self):
         current_player = self.player1 if self.player1_turn else self.player2
@@ -578,7 +591,7 @@ class GUIGame:
         x, y = map(int, self.is_valid_move.get().split(", "))
 
         # update the moves for the player
-        player.moves.append(get_move_message(player.name, (x+1, y+1), self.board))
+        player.moves.append(get_move_message(player.name, (x + 1, y + 1), self.board))
         print(player.moves)
 
         self.valid_move = True
@@ -591,9 +604,9 @@ class GUIGame:
             self.player2.set_position(x + 1, y + 1)
 
         self.update_card_grid()
-    
+
     def handle_computer_move(self, x, y):
-        self.computer_move_counter +=1
+        self.computer_move_counter += 1
         self.player2.moves.append(get_move_message(self.player2.name, (x, y), self.board))
         print(self.player2.moves)
         self.valid_move = True
@@ -603,8 +616,8 @@ class GUIGame:
     def handle_computer_swap(self, x, y, joker_x, joker_y):
         board = self.board
 
-        self.computer_move_counter +=1
-        self.player2.moves.append(get_swap_message(self.player2.name, (x-1, y), (joker_x-1, joker_y), self.board))
+        self.computer_move_counter += 1
+        self.player2.moves.append(get_swap_message(self.player2.name, (x - 1, y), (joker_x - 1, joker_y), self.board))
         print(self.player2.moves)
         self.valid_move = True
 
@@ -613,7 +626,7 @@ class GUIGame:
 
         self.last_x_swap = joker_x
         self.last_y_swap = joker_y
-        
+
         # self.player2.set_position(x, y)
         self.update_card_grid()
         self.on_make_move(2)
@@ -650,7 +663,8 @@ class GUIGame:
 
     def handle_joker_move(self, player, opponent):
         if self.is_computer_player and player.player_number == 2:
-            x, y = best_joker_move(player.xPosition, player.yPosition, self.board, (opponent.xPosition, opponent.yPosition))
+            x, y = best_joker_move(player.xPosition, player.yPosition, self.board,
+                                   (opponent.xPosition, opponent.yPosition))
             self.handle_computer_move(x, y)
             return True
 
@@ -680,7 +694,7 @@ class GUIGame:
                                   player.player_number)
             self.handle_computer_move(x, y)
             return True
-        
+
         king_move_suggestions = suggest_king_moves(player.xPosition, player.yPosition, opponent.xPosition, opponent.
                                                    yPosition, player.player_number)
 
@@ -693,7 +707,7 @@ class GUIGame:
             x, y = best_knight_move(player, opponent, (7, 1))
             self.handle_computer_move(x, y)
             return True
-        
+
         knight_move_suggestions = suggest_knight_moves(player, opponent)
 
         self.select_move(knight_move_suggestions, player)
@@ -701,7 +715,7 @@ class GUIGame:
         return True
 
     def handle_black_numeral_move(self, player, opponent):
-                
+
         board = self.board
 
         card_face = board.get_card_string(player.xPosition, player.yPosition)
@@ -711,7 +725,6 @@ class GUIGame:
             x, y = best_black_numeral_move(player, move_count, opponent, (7, 1))
             self.handle_computer_move(x, y)
             return True
-
 
         black_numeral_move_suggestions = suggest_black_numeral_moves(player, move_count, opponent)
 
@@ -726,10 +739,9 @@ class GUIGame:
         move_count = int(card_face[1:3].strip())
 
         if self.is_computer_player and player.player_number == 2:
-            x, y = best_red_numeral_move(player, move_count, opponent, (7,1))
+            x, y = best_red_numeral_move(player, move_count, opponent, (7, 1))
             self.handle_computer_move(x, y)
             return True
-
 
         red_numeral_move_suggestions = suggest_red_numeral_moves(player, move_count, opponent)
         self.select_move(red_numeral_move_suggestions, player)
@@ -740,13 +752,14 @@ class GUIGame:
         if self.is_computer_player and player.player_number == 2:
             joker_positions = suggest_joker_positions(self.board, self.player1, self.player2)
 
-            best_swap, best_joker = get_best_swap(joker_positions, player, opponent, self.last_x_swap, self.last_y_swap, self.board)
+            best_swap, best_joker = get_best_swap(joker_positions, player, opponent, self.last_x_swap, self.last_y_swap,
+                                                  self.board)
             x, y = best_swap
             joker_x, joker_y = best_joker
 
             self.handle_computer_swap(x, y, joker_x, joker_y)
             return
-        
+
         board = self.board
         joker_x, joker_y = 0, 0
 
@@ -881,7 +894,6 @@ class GUIGame:
         self.player1 = Player(player1_name, 1)
         self.player2 = Player(player2_name, 2)
 
-
         self.passed_welcome = True
 
         # ask for the details here (show hints and game timer)
@@ -899,7 +911,7 @@ class GUIGame:
             # Now you can set up the game with these options
             # self.start_game_with_options(timer_enabled, hints_enabled, timer_minutes)
             intro_window.destroy()
-        
+
             self.show_game_screen()
 
         self.ask_game_options(intro_window, on_game_options_selected)
@@ -915,7 +927,9 @@ class GUIGame:
         # Label and Checkbutton for timer
         timer_label = tk.Label(options_window, text="Enable Timer?")
         timer_label.pack()
-        timer_checkbutton = tk.Checkbutton(options_window, text="Yes", variable=timer_var, command=lambda: self.toggle_timer_entry(timer_entry, timer_label_minutes, timer_var))
+        timer_checkbutton = tk.Checkbutton(options_window, text="Yes", variable=timer_var,
+                                           command=lambda: self.toggle_timer_entry(timer_entry, timer_label_minutes,
+                                                                                   timer_var))
         timer_checkbutton.pack()
 
         # Label and Entry for timer minutes; initially not visible
@@ -970,7 +984,7 @@ class GUIGame:
 
         self.passed_welcome = True
 
-        #self.show_game_screen()
+        # self.show_game_screen()
 
         def on_game_options_selected(timer_enabled, hints_enabled, timer_minutes):
             print(f"Timer Enabled: {timer_enabled}")
@@ -984,7 +998,7 @@ class GUIGame:
             # Now you can set up the game with these options
             # self.start_game_with_options(timer_enabled, hints_enabled, timer_minutes)
             intro_window.destroy()
-        
+
             self.show_game_screen()
 
         self.ask_game_options(intro_window, on_game_options_selected)
@@ -1014,7 +1028,6 @@ class GUIGame:
             # Update UI to show the winning message
             self.show_end_game_summary("WINNER FOUND!!! {} wins the game!".format(current_player.name))
 
-
             # end game summary
             # display the total number of moves made by each player
             # display the list of moves made by each player
@@ -1035,7 +1048,7 @@ class GUIGame:
                 # self.handle_move_card(self.player2, self.player1)
                 # make the computer make a swap after 5 moves
                 if self.computer_move_counter >= 5:
-                # if self.computer_move_counter >= 5:
+                    # if self.computer_move_counter >= 5:
                     self.computer_move_counter = 0
                     self.game_screen.after(1000, self.handle_swap_card(self.player2, self.player1))
                     self.display_label()
@@ -1051,10 +1064,10 @@ class GUIGame:
             self.request_players_info()
 
         else:
-            if (not self.is_restart_game):
+            if not self.is_restart_game:
                 self.show_game_layout()
 
-            if self.timer_enabled: 
+            if self.timer_enabled:
                 self.update_timer()
 
             # Handle initial moves for both players
@@ -1067,9 +1080,8 @@ class GUIGame:
             self.update_button_visibility()
 
             self.handle_initial_move(self.player2, self.player1)
-            
-            self.display_label()
 
+            self.display_label()
 
             # After initial moves, continue with regular game loop
             self.is_first_move = False

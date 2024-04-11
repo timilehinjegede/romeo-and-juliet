@@ -1,4 +1,3 @@
-from core.enums.direction import Direction
 
 
 def joker_move(x_position, y_position, new_x_position, new_y_position):
@@ -72,6 +71,7 @@ def can_reach_joker_from(card_face, from_x, from_y, to_x, to_y):
     # Implement logic based on the card face to determine if the Joker can be reached
     # For example, if card_face indicates a Knight, use the knight_move logic
     # You'll need to implement this logic based on your game's rules
+    print(card_face, from_x, from_y, to_x, to_y)
     pass
 
 
@@ -155,6 +155,7 @@ def evaluate_joker_move(origin, current_position, opponent_position):
     score = 0
 
     # Decrease score based on proximity to the opponent
+    print(current_position)
     opponent_distance = calculate_chebyshev_distance(origin, opponent_position)
     score -= opponent_distance
 
