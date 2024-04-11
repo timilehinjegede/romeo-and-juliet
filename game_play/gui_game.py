@@ -13,7 +13,7 @@ from core.classes.moves.joker_move import best_joker_move, suggest_joker_positio
 from core.classes.moves.king_move import best_king_move, suggest_king_moves
 from core.classes.moves.knight_move import best_knight_move, suggest_knight_moves
 from core.classes.moves.red_numeral_move import best_red_numeral_move, suggest_red_numeral_moves
-from core.classes.moves.swap import Swap
+from core.classes.moves.swap import Swap, get_best_swap
 from core.enums.card_type import CardType
 from interface.console import console_ui
 from interface.gui import gui
@@ -75,6 +75,8 @@ class GUIGame:
 
         self.timer_enabled = False
         self.hints_enabled = False
+        self.computer_move_counter = 0
+
 
     def start_timer(self):
         self.update_timer()
@@ -591,11 +593,30 @@ class GUIGame:
         self.update_card_grid()
     
     def handle_computer_move(self, x, y):
+        self.computer_move_counter +=1
         self.player2.moves.append(get_move_message(self.player2.name, (x, y), self.board))
         print(self.player2.moves)
         self.valid_move = True
         self.player2.set_position(x, y)
         self.update_card_grid()
+
+    def handle_computer_swap(self, x, y, joker_x, joker_y):
+        board = self.board
+
+        self.computer_move_counter +=1
+        self.player2.moves.append(get_swap_message(self.player2.name, (x-1, y), (joker_x-1, joker_y), self.board))
+        print(self.player2.moves)
+        self.valid_move = True
+
+        self.board.card_position[joker_x][joker_y] = board.card_position[x][y]
+        self.board.card_position[x][y] = Card(None, None, CardType.JOKER)
+
+        self.last_x_swap = joker_x
+        self.last_y_swap = joker_y
+        
+        # self.player2.set_position(x, y)
+        self.update_card_grid()
+        self.on_make_move(2)
 
     def handle_initial_move(self, player, opponent):
         if self.is_computer_player and player.player_number == 2:
@@ -604,6 +625,7 @@ class GUIGame:
             self.handle_computer_move(x, y)
             self.player1_turn = not self.player1_turn
             self.display_label()
+            self.is_first_move = False
             return
 
         self.valid_move = False
@@ -715,6 +737,16 @@ class GUIGame:
         return True
 
     def handle_swap_card(self, player, opponent):
+        if self.is_computer_player and player.player_number == 2:
+            joker_positions = suggest_joker_positions(self.board, self.player1, self.player2)
+
+            best_swap, best_joker = get_best_swap(joker_positions, player, opponent, self.last_x_swap, self.last_y_swap, self.board)
+            x, y = best_swap
+            joker_x, joker_y = best_joker
+
+            self.handle_computer_swap(x, y, joker_x, joker_y)
+            return
+        
         board = self.board
         joker_x, joker_y = 0, 0
 
@@ -1001,8 +1033,15 @@ class GUIGame:
             if self.is_computer_player and not self.player1_turn:
                 # time.sleep(2)
                 # self.handle_move_card(self.player2, self.player1)
-                self.game_screen.after(1000, self.handle_move_card, self.player2, self.player1)
-                self.display_label()
+                # make the computer make a swap after 5 moves
+                if self.computer_move_counter >= 5:
+                # if self.computer_move_counter >= 5:
+                    self.computer_move_counter = 0
+                    self.game_screen.after(1000, self.handle_swap_card(self.player2, self.player1))
+                    self.display_label()
+                else:
+                    self.game_screen.after(1000, self.handle_move_card, self.player2, self.player1)
+                    self.display_label()
 
     def play_game(self):
 
