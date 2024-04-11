@@ -940,9 +940,22 @@ class GUIGame:
 
         #self.show_game_screen()
 
-        intro_window.destroy()
+        def on_game_options_selected(timer_enabled, hints_enabled, timer_minutes):
+            print(f"Timer Enabled: {timer_enabled}")
+            self.timer_enabled = timer_enabled
+            print(f"Hints Enabled: {hints_enabled}")
+            self.hints_enabled = hints_enabled
+            print(f"Timer Minutes: {timer_minutes}")
+            self.set_timer = int(timer_minutes) * 60
+            self.player1_timer_seconds = int(timer_minutes) * 60
+            self.player2_timer_seconds = int(timer_minutes) * 60
+            # Now you can set up the game with these options
+            # self.start_game_with_options(timer_enabled, hints_enabled, timer_minutes)
+            intro_window.destroy()
+        
+            self.show_game_screen()
 
-        self.show_game_screen()
+        self.ask_game_options(intro_window, on_game_options_selected)
 
     def on_make_move(self, player_number):
         if self.timer_enabled:
