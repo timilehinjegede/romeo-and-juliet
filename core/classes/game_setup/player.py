@@ -4,16 +4,17 @@ class Player:
         self.player_number = player_number
         # Initialize an empty list for storing the player's moves
         self.moves = []
+        self.currentScore = 0
 
         # Set initial positions based on player number
         if player_number == 1:
             # Player 1 starts at position (1, 7) on the board, which is at the top left
-            self.xPosition = 1
-            self.yPosition = 7
-        elif player_number == 2:
-            # Player 2 starts at position (7, 1) on the board, which is at the bottom right
             self.xPosition = 7
             self.yPosition = 1
+        elif player_number == 2:
+            # Player 2 starts at position (7, 1) on the board, which is at the bottom right
+            self.xPosition = 1
+            self.yPosition = 7
         else:
             # Default position if player number is not 1 or 2
             self.xPosition = 0

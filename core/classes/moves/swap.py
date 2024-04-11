@@ -59,3 +59,40 @@ class Swap:
 
     def get_swap_y(self):
         return self.swapY
+
+
+def evaluate_swap(swap_x, swap_y, last_x_swap, last_y_swap, opponent):
+    score = 0
+
+    # Example scoring criteria
+    # Distance from the opponent - might want to swap closer to or further from the opponent
+    distance_from_opponent = abs(swap_x - opponent.xPosition) + abs(swap_y - opponent.yPosition)
+    score += distance_from_opponent
+
+    # Avoid last swap position unless highly advantageous
+    if (swap_x, swap_y) != (last_x_swap, last_y_swap):
+        score -= 100
+    else:
+        score -= 5  # Penalize returning to the last swap position
+
+    return score
+
+
+def get_best_swap(joker_positions, player, opponent, last_x_swap, last_y_swap, board):
+    best_swap = None
+    best_joker_position = None
+    highest_score = float('-inf')
+
+    # Iterate through each possible Joker position
+    for joker_x, joker_y in joker_positions:
+        potential_swaps = Swap.suggest_swap_moves(joker_x, joker_y, player, opponent, last_x_swap, last_y_swap, board)
+        
+        for swap in potential_swaps:
+            # Evaluate each potential swap
+            score = evaluate_swap(swap[0], swap[1], last_x_swap, last_y_swap, opponent)
+            if score > highest_score:
+                highest_score = score
+                best_swap = swap
+                best_joker_position = (joker_x, joker_y)
+
+    return best_swap, best_joker_position

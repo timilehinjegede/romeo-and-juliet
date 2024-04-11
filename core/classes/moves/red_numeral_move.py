@@ -43,3 +43,40 @@ def suggest_red_numeral_moves(player, move_count, opponent):
             potential_moves.append((x, player.yPosition))
 
     return potential_moves
+
+
+def best_red_numeral_move(player, move_count, opponent, goal_position):
+    potential_moves = suggest_red_numeral_moves(player, move_count, opponent)
+    best_move = None
+    best_score = float('-inf')  # Initialize with the lowest possible score
+
+    for move in potential_moves:
+        score = evaluate_move(move, player, opponent, goal_position)
+
+        if score > best_score:
+            best_score = score
+            best_move = move
+
+    return best_move
+
+
+def evaluate_move(move, player, opponent, goal_position):
+    score = 0
+    move_x, move_y = move
+    goal_x, goal_y = goal_position
+
+    # Calculate the distance to the goal and inversely adjust the score
+    goal_distance = calculate_distance(move_x, move_y, goal_x, goal_y)
+    score -= goal_distance  # Less distance is better
+
+    # Add more evaluations as needed, for example, avoiding the opponent
+    opponent_distance = calculate_distance(move_x, move_y, opponent.xPosition, opponent.yPosition)
+    score += opponent_distance  # More distance from the opponent is better
+
+    return score
+
+
+def calculate_distance(x1, y1, x2, y2):
+    # Using Manhattan distance as a simple metric for grid movement
+    return abs(x1 - x2) + abs(y1 - y2)
+

@@ -1,3 +1,6 @@
+from core.enums.card_face import CardFace
+from core.enums.card_suit import CardSuit
+from core.enums.card_type import CardType
 from core.enums.symbols import Symbols
 
 
@@ -76,3 +79,96 @@ class Board:
     def get_card_string(self, x, y):
         # Return the string representation of the card at a specified position
         return str(self.card_position[x][y])
+
+    # def get_card_image(self, x, y):
+    #     # Get the card object at the specified position
+    #     card_obj = self.card_position[x][y]
+    #     print(card_obj)
+    #
+    #     # if card_obj:
+    #     #     card_type = card_obj.card_type.name
+    #     #     card_suit = card_obj.suit.name.lower()
+    #     #     card_face = card_obj.face.name
+    #     #
+    #     #     # Handling numeral cards separately as they don't have 'type' in their name
+    #     #     if card_type == 'RED_NUMERAL' or card_type == 'BLACK_NUMERAL':
+    #     #         card_name = f"{card_face.lower()}_of_{card_suit}.png"
+    #     #     # Handling face cards
+    #     #     elif card_type in ['KING', 'QUEEN', 'JACK']:
+    #     #         card_name = f"{card_type.lower()}_of_{card_suit}.png"
+    #     #     # Handling ace cards
+    #     #     elif card_face == 'ACE':
+    #     #         card_name = f"ace_of_{card_suit}.png"
+    #     #     # Handling joker cards
+    #     #     elif card_type == 'JOKER':
+    #     #         if card_suit == 'hearts' or card_suit == 'diamonds':
+    #     #             color = 'red'
+    #     #         else:
+    #     #             color = 'black'
+    #     #         card_name = f"{color}_joker.png"
+    #     #     else:
+    #     #         return "No matching card image found"
+    #     #
+    #     #     # Assuming all images are stored in a directory named 'card_images' within the resources folder
+    #     #     path = f"resources/card_images/{card_name}"
+    #     #     return path
+    #     # else:
+    #     #     return "No card at this position"
+
+    # def get_card_image(self, x, y):
+    #     # Get the card object at the specified position
+    #     card_obj = self.card_position[x][y]
+    #     if card_obj:
+    #         # Extract the face and suit of the card
+    #         card_face = card_obj.face
+    #         card_suit = card_obj.suit
+
+    #         # Determine the file name based on the card object attributes
+    #         if card_obj.card_type == CardType.JOKER:
+    #             # Assuming 'red_joker.png' or 'black_joker.png' for the joker cards
+    #             color = 'red' if card_suit in [CardSuit.HEARTS, CardSuit.DIAMONDS] else 'black'
+    #             card_name = f"{color}_joker.png"
+    #         elif card_face == CardFace.KING:
+    #             card_name = f"king_of_{card_suit.name.lower()}.png"
+    #         elif card_face == CardFace.JACK:
+    #             card_name = f"jack_of_{card_suit.name.lower()}.png"
+    #         else:
+    #             # Assuming numeral cards follow 'number_of_suit.png' format
+    #             card_name = f"{card_face.value}_of_{card_suit.name.lower()}.png"
+
+    #         # Assuming all images are stored in a directory named 'card_images' within the resources folder
+    #         path = f"resources/card_images/{card_name}"
+    #         return path
+    #     else:
+    #         return "No card at this position"
+
+    def get_card_image(self, x, y):
+        # Get the card object at the specified position
+        card_obj = self.card_position[x][y]
+        if card_obj:
+            # Extract the face and suit of the card
+            card_face = card_obj.face
+            card_suit = card_obj.suit
+
+            #   Determine the file name based on the card object attributes
+            if card_obj.card_type == CardType.JOKER:
+                # Assuming 'red_joker.png' or 'black_joker.png' for the joker cards
+                color = 'red' if card_suit in [CardSuit.HEARTS, CardSuit.DIAMONDS] else 'black'
+                # card_name = f"{color}_joker.png"
+                card_name = "joker.png"
+            elif card_face == CardFace.KING:
+                card_name = f"king_of_{card_suit.name.lower()}.png"
+            elif card_face == CardFace.JACK:
+                card_name = f"jack_of_{card_suit.name.lower()}.png"
+            elif card_face == CardFace.ACE:
+                # Handle the ace cards
+                card_name = f"ace_of_{card_suit.name.lower()}.png"
+            else:
+                # Assuming numeral cards follow 'number_of_suit.png' format
+                card_name = f"{card_face.value}_of_{card_suit.name.lower()}.png"
+
+            # Assuming all images are stored in a directory named 'card_images' within the resources folder
+            path = f"resources/card_images/{card_name}"
+            return path
+        else:
+            return "No card at this position"

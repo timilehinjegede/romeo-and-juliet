@@ -1,4 +1,3 @@
-from core.enums.direction import Direction
 
 
 def joker_move(x_position, y_position, new_x_position, new_y_position):
@@ -72,6 +71,7 @@ def can_reach_joker_from(card_face, from_x, from_y, to_x, to_y):
     # Implement logic based on the card face to determine if the Joker can be reached
     # For example, if card_face indicates a Knight, use the knight_move logic
     # You'll need to implement this logic based on your game's rules
+    print(card_face, from_x, from_y, to_x, to_y)
     pass
 
 
@@ -145,3 +145,32 @@ def get_possible_moves_to_joker(joker_x, joker_y, board):
                     possible_origins.append((x, joker_y))
 
     return possible_origins
+
+
+def calculate_chebyshev_distance(point_a, point_b):
+    return max(abs(point_a[0] - point_b[0]), abs(point_a[1] - point_b[1]))
+
+
+def evaluate_joker_move(origin, current_position, opponent_position):
+    score = 0
+
+    # Decrease score based on proximity to the opponent
+    print(current_position)
+    opponent_distance = calculate_chebyshev_distance(origin, opponent_position)
+    score -= opponent_distance
+
+    return score
+
+
+def best_joker_move(joker_x, joker_y, board, opponent_position):
+    potential_origins = get_possible_moves_to_joker(joker_x, joker_y, board)
+    best_move = None
+    best_score = float('-inf')
+
+    for origin in potential_origins:
+        score = evaluate_joker_move(origin, (joker_x, joker_y), opponent_position)
+        if score > best_score:
+            best_score = score
+            best_move = origin
+
+    return best_move
